@@ -26,6 +26,7 @@ async function connectToDB() {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       useCreateIndex: true,
+      useFindAndModify: true,
       ...connectData,
     })
       .then(() => {
