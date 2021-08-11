@@ -1,12 +1,33 @@
 import winston from 'winston';
+import 'winston-daily-rotate-file';
 
 const format = winston.format;
+
+const filePrefix = (process.env.NODE_ENV === 'prod' || process.env.NODE_ENV === 'production') ? '' : 'dev-';
 
 const alignedWithColorsAndTime = format.combine(
   format.colorize(),
   format.timestamp(),
   format.printf((info) => `${info.timestamp} ${info.moduleName || ''} ${info.level}:   ${info.message}`),
 );
+
+const transportError = new winston.transports.DailyRotateFile({
+  filename: `./logs/%DATE%-${filePrefix}error.log`,
+  datePattern: 'YYYY-MM-DD-HH',
+  zippedArchive: true,
+  maxSize: '20m',
+  maxFiles: '365d',
+  level: 'error',
+});
+
+const transportCombined = new winston.transports.DailyRotateFile({
+  filename: `./logs/%DATE%-${filePrefix}combined.log`,
+  datePattern: 'YYYY-MM-DD-HH',
+  zippedArchive: true,
+  maxSize: '20m',
+  maxFiles: '365d',
+  level: 'info',
+});
 
 const Logger = winston.createLogger({
   level: 'info',
@@ -16,8 +37,8 @@ const Logger = winston.createLogger({
     // - Write all logs with level `error` and below to `error.log`
     // - Write all logs with level `info` and below to `combined.log`
     //
-    new winston.transports.File({ filename: './logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: './logs/combined.log', level: 'info' }),
+    transportError,
+    transportCombined,
   ],
 });
 
