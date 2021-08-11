@@ -3,6 +3,7 @@ import bodyParser from 'body-parser';
 import helmet from 'helmet';
 import cors from 'cors';
 import express from 'express';
+import passport from 'passport';
 import accessControl from './config/accessControl';
 import corsOptionsDelegate from './config/corsOptions';
 import HttpError from './error/HttpError';
@@ -10,7 +11,8 @@ import Logger from './core/logger';
 import HttpErrorHandler from './error/HttpErrorHandler';
 import connectToDB from './config/mongoose.config';
 import serverLogger from './core/serverLogger';
-import LoginRouter from './router/LoginRouter';
+import LoginRouter from './router/AdminRouter';
+import passportAuthStrategy from './config/passportAuthStrategy';
 
 const logger = Logger.child({ moduleName: 'Application' });
 
@@ -23,6 +25,7 @@ export default class Application {
   start() {
     this.initApp();
     this.initDatabase();
+    this.initPassport();
     this.addRouters();
     this.addErrorHandler();
 
@@ -51,6 +54,10 @@ export default class Application {
       logger.error(err);
       throw new Error(`unable to connect to database ${err.message}`);
     });
+  }
+
+  initPassport() {
+    passportAuthStrategy(passport);
   }
 
   addRouters() {
