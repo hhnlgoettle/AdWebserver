@@ -1,10 +1,11 @@
-import http from 'http';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import Application from './backend';
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World\n');
-}).listen(1337);
-
-console.log('Server running at http://127.0.0.1:1337/');
-
-export default server;
+if (process.env.NODE_ENV === 'development' && fs.existsSync('.env.dev')) {
+  dotenv.config({ path: '.env.dev' });
+} else {
+  dotenv.config();
+}
+const app = new Application();
+app.start();
