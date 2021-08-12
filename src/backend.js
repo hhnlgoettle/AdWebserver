@@ -11,8 +11,9 @@ import Logger from './core/logger';
 import HttpErrorHandler from './error/HttpErrorHandler';
 import connectToDB from './config/mongoose.config';
 import serverLogger from './core/serverLogger';
-import LoginRouter from './router/AdminRouter';
+import AdminRouter from './router/AdminRouter';
 import passportAuthStrategy from './config/passportAuthStrategy';
+import TestRouter from './router/TestRouter';
 
 const logger = Logger.child({ moduleName: 'Application' });
 
@@ -28,10 +29,21 @@ export default class Application {
     this.initPassport();
     this.addRouters();
     this.addErrorHandler();
+    return new Promise((resolve) => {
+      this.serverM.listen(process.env.REST_PORT, () => {
+        logger.info(`Server running in NODE_ENV ${process.env.NODE_ENV}`);
+        logger.info(`Server running on port ${process.env.REST_PORT}`);
+        resolve(true);
+      });
+    });
+  }
 
-    this.serverM.listen(process.env.REST_PORT, () => {
-      logger.info(`Server running in NODE_ENV ${process.env.NODE_ENV}`);
-      logger.info(`Server running on port ${process.env.REST_PORT}`);
+  close() {
+    return new Promise((resolve, reject) => {
+      this.serverM.close((err) => {
+        if (err) reject(err);
+        resolve(true);
+      });
     });
   }
 
@@ -62,8 +74,9 @@ export default class Application {
 
   addRouters() {
     const routers = [
-      new LoginRouter(),
+      new AdminRouter(),
     ];
+    if (process.env.NODE_ENV === 'test') routers.push(new TestRouter());
 
     routers.forEach((r) => {
       logger.info(`App: add router: ${r.getPrefix()}`);
