@@ -15,6 +15,7 @@ import AdminRouter from './router/AdminRouter';
 import passportAuthStrategy from './config/passportAuthStrategy';
 import TestRouter from './router/TestRouter';
 import CustomerRouter from './router/CustomerRouter';
+import PublisherRouter from './router/PublisherRouter';
 
 const logger = Logger.child({ moduleName: 'Application' });
 
@@ -77,6 +78,7 @@ export default class Application {
     const routers = [
       new AdminRouter(),
       new CustomerRouter(),
+      new PublisherRouter(),
     ];
     if (process.env.NODE_ENV === 'test') routers.push(new TestRouter());
 
