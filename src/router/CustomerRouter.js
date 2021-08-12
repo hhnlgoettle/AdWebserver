@@ -1,16 +1,16 @@
 import BaseRouter from '../core/BaseRouter';
 import logger from '../core/logger';
 import decodeBasicAuth from '../util/decodeBasicAuth';
-import Admin from '../models/Admin';
+import Customer from '../models/Customer';
 import HttpError from '../error/HttpError';
 import verifyHash from '../logic/login/verifyHash';
 import generateToken from '../logic/login/generateToken';
 
-const myLogger = logger.child({ moduleName: 'AdminRouter' });
+const myLogger = logger.child({ moduleName: 'CustomerRouter' });
 
-export default class AdminRouter extends BaseRouter {
+export default class CustomerRouter extends BaseRouter {
   constructor() {
-    super('/admin', myLogger);
+    super('/customer', myLogger);
     this.getRouter().get('/login', this.login);
     this.getRouter().get('/register', this.register);
   }
@@ -18,14 +18,14 @@ export default class AdminRouter extends BaseRouter {
   async login(req, res, next) {
     try {
       const { username, password } = decodeBasicAuth(req.headers);
-      const admin = await Admin.findOne({ username }).select('+password');
-      if (!admin) throw new HttpError.Unauthorized('Email or password is wrong');
+      const customer = await Customer.findOne({ username }).select('+password');
+      if (!customer) throw new HttpError.Unauthorized('Email or password is wrong');
 
-      if (admin.confirmed !== true) throw (new HttpError.Unauthorized('account not confirmed'));
-      const correctPassword = await verifyHash(password, admin.password);
+      if (customer.confirmed !== true) throw (new HttpError.Unauthorized('account not confirmed'));
+      const correctPassword = await verifyHash(password, customer.password);
       if (correctPassword !== true) throw HttpError.Unauthorized('Email or username is wrong');
 
-      const token = await generateToken(admin.toObject());
+      const token = await generateToken(customer.toObject());
       res.status(BaseRouter.code.okay).json({ token });
     } catch (err) {
       next(err);
@@ -35,15 +35,15 @@ export default class AdminRouter extends BaseRouter {
   async register(req, res, next) {
     try {
       const { username, password } = decodeBasicAuth(req.headers);
-      const existing = await Admin.findOne({ username });
+      const existing = await Customer.findOne({ username });
       if (existing) throw HttpError.Conflict('username is taken');
 
-      const admin = new Admin();
-      admin.username = username;
-      admin.password = password;
+      const customer = new Customer();
+      customer.username = username;
+      customer.password = password;
 
-      await admin.save().catch((err) => { throw HttpError.BadRequest(err.message); });
-      const createdUser = await Admin.findOne({ username });
+      await customer.save().catch((err) => { throw HttpError.BadRequest(err.message); });
+      const createdUser = await Customer.findOne({ username });
       res.status(BaseRouter.code.created).json({ user: createdUser });
     } catch (err) {
       next(err);
