@@ -9,6 +9,7 @@
     "start:dev": "cross-env NODE_ENV=development nodemon --exec babel-node src/index.js",
     "serve": "npm run build && node dist/index.js",
     "test": "npm run build && mocha --require @babel/register",
+    "test:integration": "cross-env NODE_ENV=test mocha --require @babel/register --recursive ./test/integration/",
     "lint": "./node_modules/.bin/eslint src/"
   },
   "author": "Luca Göttle <lgoettle@stud.hs-heilbronn.de>",
@@ -19,6 +20,8 @@
     "@babel/eslint-parser": "^7.15.0",
     "@babel/preset-env": "^7.4.2",
     "@babel/register": "^7.4.0",
+    "chai": "^4.3.4",
+    "chai-http": "^4.3.0",
     "eslint": "^7.24.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-airbnb-base": "^14.2.1",
@@ -44,8 +47,8 @@
     "mongoose-unique-validator": "^2.0.3",
     "morgan": "^1.10.0",
     "passport": "^0.4.1",
-    "passport-jwt": "^4.0.0",
     "passport-http-bearer": "^1.0.1",
+    "passport-jwt": "^4.0.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"
   }
