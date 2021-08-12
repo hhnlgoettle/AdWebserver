@@ -15,10 +15,10 @@ const Schema = new mongoose.Schema({
     required: true,
     index: true,
   },
-  displayBlocks: [DisplayBlock],
+  displayBlocks: { type: [DisplayBlock.schema], index: true, default: [] },
 });
 
-Schema.set('autoIndex', false);
+Schema.set('autoIndex', true);
 
 const App = mongoose.model('App', Schema);
 export default App;

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import DisplayBlockTypes from '../constants/DisplayBlockTypes';
 
-const DisplayBlock = new mongoose.Schema({
+const Schema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -15,5 +15,7 @@ const DisplayBlock = new mongoose.Schema({
     default: DisplayBlockTypes.interactionRewardingAd,
   },
 });
+
+const DisplayBlock = mongoose.model('DisplayBlock', Schema);
 
 export default DisplayBlock;

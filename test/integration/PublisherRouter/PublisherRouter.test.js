@@ -91,4 +91,20 @@ describe('PublisherRouter.js', () => {
         });
     });
   });
+
+  it('creates a display block', async () => {
+    const app = await createApp(appName, customer.id);
+    const displayBlockName = 'MyDisplayBlock';
+    return new Promise((resolve) => {
+      chai.request(server).post(`/publisher/app/${app.id}/displayblock`)
+        .send({ name: displayBlockName })
+        .auth(token, { type: 'bearer' })
+        .end((err, res) => {
+          expect(res.body.app.displayBlocks).to.be.an('array');
+          expect(res.body.app.displayBlocks.length).to.equal(1);
+          expect(res.body.app.displayBlocks[0].name).to.equal(displayBlockName);
+          resolve();
+        });
+    });
+  });
 });

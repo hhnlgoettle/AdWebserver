@@ -4,6 +4,7 @@ import customerAuth from '../logic/login/customerAuth';
 import auth from '../logic/login/auth';
 import App from '../models/App';
 import HttpError from '../error/HttpError';
+import DisplayBlock from '../models/DisplayBlock';
 
 const myLogger = logger.child({ moduleName: 'PublisherRouter' });
 
@@ -13,6 +14,7 @@ export default class PublisherRouter extends BaseRouter {
     this.getRouter().post('/app', auth(customerAuth), this.createApp);
     this.getRouter().get('/app/:id', auth(customerAuth), this.getAppById);
     this.getRouter().get('/app', auth(customerAuth), this.getApps);
+    this.getRouter().post('/app/:id/displayblock', auth(customerAuth), this.createDisplayBlock);
   }
 
   async createApp(req, res, next) {
@@ -53,6 +55,25 @@ export default class PublisherRouter extends BaseRouter {
       const apps = await App.find({ owner: user.id });
       apps.map((a) => a.toObject());
       res.status(BaseRouter.code.okay).send({ apps });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async createDisplayBlock(req, res, next) {
+    try {
+      const { user } = req;
+      const { name } = req.body;
+      const { id } = req.params;
+
+      const app = await App.findById(id);
+      if (String(app.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this app');
+
+      const block = new DisplayBlock();
+      block.name = name;
+      app.displayBlocks.push(block);
+      await app.save();
+      res.status(BaseRouter.code.created).send({ app });
     } catch (err) {
       next(err);
     }
