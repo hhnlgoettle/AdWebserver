@@ -69,13 +69,13 @@ export default class AdvertiserRouter extends BaseRouter {
 
       const campaign = await Campaign.findById(id)
         .catch((err) => next(HttpError.BadRequest(err.message)));
-      if (String(campaign.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this campaign');
+      if (String(campaign.owner) !== String(user.id)) throw (HttpError.Forbidden('you are not owner of this campaign'));
       req.campaign = campaign.toObject();
 
       const controller = new MultiFileUploadController();
       await controller.upload(req)
         .catch((err) => {
-          next(err);
+          throw (err);
         });
       campaign.url = `/creatives/${campaign.owner}/${campaign._id}`;
       await campaign.save();
@@ -95,7 +95,7 @@ export default class AdvertiserRouter extends BaseRouter {
       if (String(campaign.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this campaign');
       req.campaign = campaign.toObject();
 
-      if (campaign.url == null || campaign.url.length === 0) next(HttpError.BadRequest('campaign has no creative'));
+      if (campaign.url == null || campaign.url.length === 0) throw (HttpError.BadRequest('campaign has no creative'));
       const deletedFiles = await deleteDirContent(`.${campaign.url}`);
       campaign.url = null;
       await campaign.save();
