@@ -65,8 +65,6 @@ export default class AdvertiserRouter extends BaseRouter {
       const { user } = req;
       const { id } = req.params;
 
-      console.log(req.body);
-
       const campaign = await Campaign.findById(id)
         .catch((err) => next(HttpError.BadRequest(err.message)));
       if (String(campaign.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this campaign');
@@ -74,12 +72,12 @@ export default class AdvertiserRouter extends BaseRouter {
 
       const controller = new MultiFileUploadController();
       await controller.upload(req)
-        .then(() => {
-          res.status(BaseRouter.code.created).send({ campaign });
-        })
         .catch((err) => {
           next(err);
         });
+      campaign.url = `/creatives/${campaign.owner}/${campaign._id}`;
+      await campaign.save();
+      res.status(BaseRouter.code.created).send({ campaign });
     } catch (err) {
       next(err);
     }
