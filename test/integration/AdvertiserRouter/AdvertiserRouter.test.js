@@ -70,7 +70,7 @@ describe('AdvertiserRouter.js', () => {
     });
   });
 
-  it('retrieve multiple apps', async () => {
+  it('retrieve multiple campaigns', async () => {
     const otherCustomer = await createCustomer('otherCustomer', 'otherCustomerPassword');
     await Promise.all([
       createCampaign(`${campaignName}0`, customer.id),
@@ -87,6 +87,19 @@ describe('AdvertiserRouter.js', () => {
         .end((err, res) => {
           expect(res.body.campaigns).to.be.an('array');
           expect(res.body.campaigns.length).to.equal(5);
+          resolve();
+        });
+    });
+  });
+
+  it('upload creative', async () => {
+    const campaign = await createCampaign(campaignName, customer.id);
+    return new Promise((resolve) => {
+      chai.request(server).get(`/advertiser/campaign/${campaign.id}/creative/upload`)
+        .auth(token, { type: 'bearer' })
+        .end((err, res) => {
+          expect(res.body.campaign).to.be.an('object');
+          expect(res.body.campaign.name).to.equal(campaignName);
           resolve();
         });
     });

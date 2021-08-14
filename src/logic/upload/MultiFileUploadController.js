@@ -1,10 +1,11 @@
 import multer from 'multer';
 import createDirIfNotExists from '../../util/createDirIfNotExists';
 import HttpError from '../../error/HttpError';
+import CreativePath from '../../util/CreativePath';
 
 const storage = multer.diskStorage({
   destination(req, file, callback) {
-    const path = `./creatives/${req.user.id}/${req.campaign._id}`;
+    const path = CreativePath.fsPath(req.campaign);
     createDirIfNotExists(path)
       .then(() => {
         callback(null, path);

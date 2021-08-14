@@ -6,6 +6,7 @@ import HttpError from '../error/HttpError';
 import Campaign from '../models/Campaign';
 import MultiFileUploadController from '../logic/upload/MultiFileUploadController';
 import deleteDirContent from '../util/deleteCreative';
+import CreativePath from '../util/CreativePath';
 
 const myLogger = logger.child({ moduleName: 'AdvertiserRouter' });
 
@@ -77,7 +78,7 @@ export default class AdvertiserRouter extends BaseRouter {
         .catch((err) => {
           throw (err);
         });
-      campaign.url = `/creatives/${campaign.owner}/${campaign._id}`;
+      campaign.url = CreativePath.path(req.campaign);
       await campaign.save();
       res.status(BaseRouter.code.created).send({ campaign });
     } catch (err) {
