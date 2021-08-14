@@ -9,6 +9,8 @@ import generateToken from '../../../src/logic/login/generateToken';
 import createCustomer from '../../util/createCustomer';
 import Campaign from '../../../src/models/Campaign';
 import createCampaign from '../../util/createCampaign';
+import CreativePath from '../../../src/util/CreativePath';
+import fsPromise from '../../../src/util/fsPromise';
 
 const serverApp = new Application();
 const server = serverApp.serverM;
@@ -92,16 +94,27 @@ describe('AdvertiserRouter.js', () => {
     });
   });
 
-  it('upload creative', async () => {
-    const campaign = await createCampaign(campaignName, customer.id);
-    return new Promise((resolve) => {
-      chai.request(server).get(`/advertiser/campaign/${campaign.id}/creative/upload`)
-        .auth(token, { type: 'bearer' })
-        .end((err, res) => {
-          expect(res.body.campaign).to.be.an('object');
-          expect(res.body.campaign.name).to.equal(campaignName);
-          resolve();
-        });
+  describe('upload creatives', () => {
+    before(async () => {
+      const basePath = CreativePath.fsBasePath();
+      await fsPromise.rmdir(basePath, { recursive: true });
+    });
+    it('upload creative', async () => {
+      const campaign = await createCampaign(campaignName, customer.id);
+      return new Promise((resolve) => {
+        chai.request(server).post(`/advertiser/campaign/${campaign.id}/creative/upload`)
+          .auth(token, { type: 'bearer' })
+          .set('Content-Type', 'multipart/form-data')
+          .attach('creative', './test/spec/creative/index.html', 'index.html')
+          .attach('creative', './test/spec/creative/test.svg', 'test.svg')
+          .attach('creative', './test/spec/creative/test.js', 'test.js')
+          .end((err, res) => {
+            expect(res.body.campaign).to.be.an('object');
+            expect(res.body.campaign.name).to.equal(campaignName);
+            expect(res.body.campaign.url).to.equal(`${CreativePath.path(res.body.campaign)}`);
+            resolve();
+          });
+      });
     });
   });
 });
