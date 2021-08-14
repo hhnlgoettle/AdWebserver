@@ -10,8 +10,7 @@ export default async function createDirIfNotExists(path) {
           if (err2) reject(err2);
           resolve(true);
         });
-      }
-      if (stats.isDirectory()) {
+      } else if (stats.isDirectory()) {
         fs.readdir(path, (err3, data) => {
           if (err) reject(err);
           if (data && data.length > 0) reject(HttpError.Conflict('you already have a creative uploaded. delete the creative to upload'));
