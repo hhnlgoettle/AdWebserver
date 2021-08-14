@@ -116,3 +116,7 @@ dist
 /creatives/*
 !/creatives/.gitkeep
 
+/test/data/*
+!/test/data/.gitkeep
+
+
