@@ -5,6 +5,7 @@ import auth from '../logic/login/auth';
 import App from '../models/App';
 import HttpError from '../error/HttpError';
 import DisplayBlock from '../models/DisplayBlock';
+import Tags from '../constants/Tags';
 
 const myLogger = logger.child({ moduleName: 'PublisherRouter' });
 
@@ -21,14 +22,25 @@ export default class PublisherRouter extends BaseRouter {
     try {
       const { user } = req;
       const { name } = req.body;
+      const { tags = [], preferred = [], blocked = [], maxLength = -1 } = req.body;
+      await Promise.all([
+        Tags.filterInput(tags),
+        Tags.filterInput(preferred),
+        Tags.filterInput(blocked),
+      ]).catch((err) => { throw HttpError.BadRequest(err.message); });
 
       const app = new App();
       app.name = name;
       app.owner = user.id;
+      app.tags = tags;
+      app.preferred = preferred;
+      app.blocked = blocked;
+      app.maxLength = maxLength;
       app.save()
         .then((mApp) => {
           res.status(BaseRouter.code.created).send({ app: mApp.toObject() });
-        }).catch((err) => next(err));
+        })
+        .catch((err) => next(HttpError.BadRequest(err.message)));
     } catch (err) {
       next(err);
     }

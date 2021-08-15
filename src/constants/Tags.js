@@ -23,6 +23,7 @@ class Tags {
   constructor(tags) {
     this.tags = tags;
     this.tagsObj = convertTagArrayToObject(tags);
+    this.tagValues = this.tags.map((t) => t.name);
   }
 
   getTags() {
@@ -31,6 +32,19 @@ class Tags {
 
   getTagsAsObject() {
     return this.tagsObj;
+  }
+
+  isKnownTag(tag) {
+    return this.tagValues.includes(tag);
+  }
+
+  async filterInput(tagArr) {
+    tagArr.forEach((t) => {
+      if (this.isKnownTag(t) === false) {
+        throw Error(`tag ${t} is not known`);
+      }
+    });
+    return true;
   }
 }
 

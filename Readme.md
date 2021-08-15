@@ -191,9 +191,13 @@ returns:
 ```
 {
     "app": {
-        "_id": "6117a776a185d479d482947c",
+        "preferred": [],
+        "blocked": ["nudity", "violence"],
+        "tags": ["game", "casual", "idle-game"],
+        "maxLength": 40,
+        "_id": "61192351b448684ec4c1767a",
         "displayBlocks": [],
-        "name": "MyAppName",
+        "name": "My Little Game",
         "owner": "6117a6fba185d479d4829472",
         "__v": 0
     }
@@ -213,19 +217,23 @@ headers:
 
 params: 
 ```
-"id": "6117a776a185d479d482947c"
+"id": "61192351b448684ec4c1767a"
 ```
 
 returns: 
 ```
 {
     "app": {
-        "_id": "6117a776a185d479d482947c",
-        "displayBlocks": [],
-        "name": "MyAppName",
-        "owner": "6117a6fba185d479d4829472",
-        "__v": 0
-    }
+            "preferred": [],
+            "blocked": ["nudity", "violence"],
+            "tags": ["game", "casual", "idle-game"],
+            "maxLength": 40,
+            "_id": "61192351b448684ec4c1767a",
+            "displayBlocks": [],
+            "name": "My Little Game",
+            "owner": "6117a6fba185d479d4829472",
+            "__v": 0
+        }
 }
 ```
 
@@ -245,9 +253,13 @@ returns:
 {
     "apps": [
         {
-            "_id": "6117a776a185d479d482947c",
+            "preferred": [],
+            "blocked": ["nudity", "violence"],
+            "tags": ["game", "casual", "idle-game"],
+            "maxLength": 40,
+            "_id": "61192351b448684ec4c1767a",
             "displayBlocks": [],
-            "name": "MyAppName",
+            "name": "My Little Game",
             "owner": "6117a6fba185d479d4829472",
             "__v": 0
         }
@@ -267,7 +279,7 @@ headers:
 ```
 params: 
 ```
-"id": "6117a776a185d479d482947c"
+"id": "61192351b448684ec4c1767a"
 ```
 body: 
 ```
@@ -279,7 +291,11 @@ returns:
 ```
 {
     "app": {
-        "_id": "6117a776a185d479d482947c",
+        "preferred": [],
+        "blocked": ["nudity", "violence"],
+        "tags": ["game", "casual", "idle-game"],
+        "maxLength": 40,
+        "_id": "61192351b448684ec4c1767a",
         "displayBlocks": [
             {
                 "type": "interactionRewardingAd",
@@ -287,9 +303,10 @@ returns:
                 "name": "MyDisplayBlockName"
             }
         ],
-        "name": "MyAppName",
+        "displayBlocks": [],
+        "name": "My Little Game",
         "owner": "6117a6fba185d479d4829472",
-        "__v": 1
+        "__v": 0
     }
 }
 ```
@@ -310,16 +327,24 @@ headers:
 body: 
 ```
 {
-    "name": "MyCampaignName"
+    "name": "Campaign about a non game",
+    "tags": ["non-game"],
+    "preferred": ["game"],
+    "blocked": ["nudity", "violence"],
+    "length": 30
 }
 ```
 returns: 
 ```
 {
     "campaign": {
+        "preferred": ["game"],
+        "blocked": ["nudity","violence"],
+        "tags": ["non-game"],
+        "length": 30,
         "url": null,
-        "_id": "6117a9b8a185d479d4829489",
-        "name": "MyCampaignName",
+        "_id": "611919ddb448684ec4c17674",
+        "name": "Campaign about a non game",
         "owner": "61167260ecb2957f54cb5121",
         "__v": 0
     }
@@ -339,19 +364,23 @@ headers:
 
 params: 
 ```
-"id": "6117a9b8a185d479d4829489"
+"id": "611919ddb448684ec4c17674"
 ```
 
 returns: 
 ```
 {
     "campaign": {
-        "url": null,
-        "_id": "6117a9b8a185d479d4829489",
-        "name": "MyCampaignName",
-        "owner": "61167260ecb2957f54cb5121",
-        "__v": 0
-    }
+            "preferred": ["game"],
+            "blocked": ["nudity","violence"],
+            "tags": ["non-game"],
+            "length": 30,
+            "url": null,
+            "_id": "611919ddb448684ec4c17674",
+            "name": "Campaign about a non game",
+            "owner": "61167260ecb2957f54cb5121",
+            "__v": 0
+        }
 }
 ```
 
@@ -370,9 +399,13 @@ returns:
 {
     "campaigns": [
         {
+            "preferred": ["game"],
+            "blocked": ["nudity","violence"],
+            "tags": ["non-game"],
+            "length": 30,
             "url": null,
-            "_id": "6117a9b8a185d479d4829489",
-            "name": "MyCampaignName",
+            "_id": "611919ddb448684ec4c17674",
+            "name": "Campaign about a non game",
             "owner": "61167260ecb2957f54cb5121",
             "__v": 0
         }

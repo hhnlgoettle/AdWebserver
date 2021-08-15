@@ -15,6 +15,13 @@ const Schema = new mongoose.Schema({
     required: true,
     index: true,
   },
+  // which tags in campaigns are preferred
+  preferred: { type: [{ type: String, maxLength: 24 }], default: [] },
+  // which tags in campaigns will be ignored
+  blocked: { type: [{ type: String, maxLength: 24 }], default: [] },
+  // tags to self describe app
+  tags: { type: [{ type: String, maxLength: 24 }], default: [] },
+  maxLength: { type: Number, default: -1 }, // maximum length of an ad
   displayBlocks: { type: [DisplayBlock.schema], index: true, default: [] },
 });
 
