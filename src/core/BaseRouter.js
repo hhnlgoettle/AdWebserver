@@ -17,6 +17,7 @@ class BaseRouter {
 
   static code = {
     created: 201,
+    noContent: 204,
     okay: 200,
     internalServerError: 500,
     badRequest: 400,
