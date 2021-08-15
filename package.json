@@ -10,6 +10,7 @@
     "serve": "npm run build && node dist/index.js",
     "test": "npm run build && mocha --require @babel/register",
     "test:integration": "cross-env NODE_ENV=test mocha --require @babel/register --recursive ./test/integration/",
+    "test:unit": "cross-env NODE_ENV=test mocha --require @babel/register --recursive ./test/unit/",
     "lint": "./node_modules/.bin/eslint src/"
   },
   "author": "Luca Göttle <lgoettle@stud.hs-heilbronn.de>",
