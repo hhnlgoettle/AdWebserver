@@ -18,6 +18,7 @@ import CustomerRouter from './router/CustomerRouter';
 import PublisherRouter from './router/PublisherRouter';
 import AdvertiserRouter from './router/AdvertiserRouter';
 import TagRouter from './router/TagRouter';
+import AdRequestRouter from './router/AdRequestRouter';
 
 const logger = Logger.child({ moduleName: 'Application' });
 
@@ -83,6 +84,7 @@ export default class Application {
       new PublisherRouter(),
       new AdvertiserRouter(),
       new TagRouter(),
+      new AdRequestRouter(),
     ];
     if (process.env.NODE_ENV === 'test') routers.push(new TestRouter());
 
@@ -90,6 +92,8 @@ export default class Application {
       logger.info(`App: add router: ${r.getPrefix()}`);
       this.appM.use(r.getPrefix(), r.getRouter());
     });
+
+    this.appM.use('/public', express.static('public'));
 
     // catch-all endpoint if client makes request to non-existent endpoint
     this.appM.use('*', () => {

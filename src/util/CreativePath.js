@@ -2,7 +2,7 @@ const isTestEnvironment = process.env.NODE_ENV === 'test' || process.env.NODE_EN
 
 export default class CreativePath {
   static basePath() {
-    return isTestEnvironment ? '/test/data/creatives/' : '/creatives/';
+    return isTestEnvironment ? '/test/data/creatives/' : '/public/creatives/';
   }
 
   static fsBasePath() {
@@ -19,5 +19,10 @@ export default class CreativePath {
 
   static fsPath(campaign) {
     return `${CreativePath.fsBasePath()}${campaign.owner}/${campaign._id}`;
+  }
+
+  static joinPathAndFile(path, file) {
+    if (path.endsWith('/')) return `${path}${file}`;
+    return `${path}/${file}`;
   }
 }

@@ -80,6 +80,7 @@ export default class AdvertiserRouter extends BaseRouter {
 
       const campaign = await Campaign.findById(id)
         .catch((err) => next(HttpError.BadRequest(err.message)));
+      if (campaign == null) throw (HttpError.NotFound('campaign not found'));
       if (String(campaign.owner) !== String(user.id)) throw (HttpError.Forbidden('you are not owner of this campaign'));
       req.campaign = campaign.toObject();
 

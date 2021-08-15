@@ -6,6 +6,7 @@ import App from '../models/App';
 import HttpError from '../error/HttpError';
 import DisplayBlock from '../models/DisplayBlock';
 import Tags from '../constants/Tags';
+import resolveApp from '../logic/adRequest/resolveApp.middleware';
 
 const myLogger = logger.child({ moduleName: 'PublisherRouter' });
 
@@ -15,7 +16,7 @@ export default class PublisherRouter extends BaseRouter {
     this.getRouter().post('/app', auth(customerAuth), this.createApp);
     this.getRouter().get('/app/:id', auth(customerAuth), this.getAppById);
     this.getRouter().get('/app', auth(customerAuth), this.getApps);
-    this.getRouter().post('/app/:id/displayblock', auth(customerAuth), this.createDisplayBlock);
+    this.getRouter().post('/app/:appId/displayblock', auth(customerAuth), resolveApp, this.createDisplayBlock);
   }
 
   async createApp(req, res, next) {
@@ -74,9 +75,8 @@ export default class PublisherRouter extends BaseRouter {
     try {
       const { user } = req;
       const { name } = req.body;
-      const { id } = req.params;
 
-      const app = await App.findById(id);
+      const app = req.app;
       if (String(app.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this app');
 
       const block = new DisplayBlock();

@@ -113,8 +113,10 @@ dist
 
 /keys
 
-/creatives/*
-!/creatives/.gitkeep
+/public/creatives/*
+!/public/*/.gitkeep
+
+
 
 /test/data/*
 !/test/data/.gitkeep
