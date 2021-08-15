@@ -14,6 +14,7 @@ export default class HttpErrorHandler {
         return;
       }
       logger.error(err);
+      logger.error(err.stack);
       res.status(500).send({ message: 'Internal Server Error' });
     } catch (e) {
       logger.error(JSON.stringify(e));
