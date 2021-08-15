@@ -22,10 +22,9 @@ export default class PublisherRouter extends BaseRouter {
     try {
       const { user } = req;
       const { name } = req.body;
-      const { tags = [], preferred = [], blocked = [], maxLength = -1 } = req.body;
+      const { tags = [], blocked = [], maxLength = -1 } = req.body;
       await Promise.all([
         Tags.filterInput(tags),
-        Tags.filterInput(preferred),
         Tags.filterInput(blocked),
       ]).catch((err) => { throw HttpError.BadRequest(err.message); });
 
@@ -33,7 +32,6 @@ export default class PublisherRouter extends BaseRouter {
       app.name = name;
       app.owner = user.id;
       app.tags = tags;
-      app.preferred = preferred;
       app.blocked = blocked;
       app.maxLength = maxLength;
       app.save()

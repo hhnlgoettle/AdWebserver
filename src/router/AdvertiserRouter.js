@@ -25,11 +25,10 @@ export default class AdvertiserRouter extends BaseRouter {
     try {
       const { user } = req;
       const { name } = req.body;
-      const { tags = [], preferred = [], blocked = [], length = 30 } = req.body;
+      const { tags = [], blocked = [], length = 30 } = req.body;
 
       await Promise.all([
         Tags.filterInput(tags),
-        Tags.filterInput(preferred),
         Tags.filterInput(blocked),
       ]).catch((err) => { throw HttpError.BadRequest(err.message); });
 
@@ -37,7 +36,6 @@ export default class AdvertiserRouter extends BaseRouter {
       campaign.name = name;
       campaign.owner = user.id;
       campaign.tags = tags;
-      campaign.preferred = preferred;
       campaign.blocked = blocked;
       campaign.length = length;
       campaign.save()

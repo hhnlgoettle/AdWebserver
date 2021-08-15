@@ -191,7 +191,6 @@ returns:
 ```
 {
     "app": {
-        "preferred": [],
         "blocked": ["nudity", "violence"],
         "tags": ["game", "casual", "idle-game"],
         "maxLength": 40,
@@ -224,7 +223,6 @@ returns:
 ```
 {
     "app": {
-            "preferred": [],
             "blocked": ["nudity", "violence"],
             "tags": ["game", "casual", "idle-game"],
             "maxLength": 40,
@@ -253,7 +251,6 @@ returns:
 {
     "apps": [
         {
-            "preferred": [],
             "blocked": ["nudity", "violence"],
             "tags": ["game", "casual", "idle-game"],
             "maxLength": 40,
@@ -291,7 +288,6 @@ returns:
 ```
 {
     "app": {
-        "preferred": [],
         "blocked": ["nudity", "violence"],
         "tags": ["game", "casual", "idle-game"],
         "maxLength": 40,
@@ -329,7 +325,6 @@ body:
 {
     "name": "Campaign about a non game",
     "tags": ["non-game"],
-    "preferred": ["game"],
     "blocked": ["nudity", "violence"],
     "length": 30
 }
@@ -338,7 +333,6 @@ returns:
 ```
 {
     "campaign": {
-        "preferred": ["game"],
         "blocked": ["nudity","violence"],
         "tags": ["non-game"],
         "length": 30,
@@ -371,7 +365,6 @@ returns:
 ```
 {
     "campaign": {
-            "preferred": ["game"],
             "blocked": ["nudity","violence"],
             "tags": ["non-game"],
             "length": 30,
@@ -399,7 +392,6 @@ returns:
 {
     "campaigns": [
         {
-            "preferred": ["game"],
             "blocked": ["nudity","violence"],
             "tags": ["non-game"],
             "length": 30,

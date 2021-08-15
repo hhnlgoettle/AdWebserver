@@ -15,8 +15,6 @@ const Schema = new mongoose.Schema({
     required: true,
     index: true,
   },
-  // which tags in campaigns are preferred
-  preferred: { type: [{ type: String, maxLength: 24 }], default: [] },
   // which tags in campaigns will be ignored
   blocked: { type: [{ type: String, maxLength: 24 }], default: [] },
   // tags to self describe app
