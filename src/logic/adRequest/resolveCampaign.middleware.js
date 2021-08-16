@@ -24,10 +24,13 @@ export default async function resolveCampaign(req, res, next) {
     if (campaign == null) throw HttpError.NotFound('campaign not found');
 
     if (req.user == null) throw HttpError.Unauthorized('no user found to check access rights');
-    if (req.user.role !== 'admin') {
-      if (String(req.user.id) !== String(campaign.owner)) {
+    switch (req.user.role) {
+      case 'admin': break;
+      case 'guest': break;
+      case 'customer': if (String(req.user.id) !== String(campaign.owner)) {
         throw HttpError.Forbidden('you are not owner of this campaign');
-      }
+      } break;
+      default: throw HttpError.Forbidden('you are not owner of this campaign');
     }
 
     req.campaign = campaign;

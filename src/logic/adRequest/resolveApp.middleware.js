@@ -21,10 +21,13 @@ export default async function resolveApp(req, res, next) {
     if (app == null) throw HttpError.NotFound('App not found');
 
     if (req.user == null) throw HttpError.Unauthorized('no user found to check access rights');
-    if (req.user.role !== 'admin') {
-      if (String(req.user.id) !== String(app.owner)) {
+    switch (req.user.role) {
+      case 'admin': break;
+      case 'guest': break;
+      case 'customer': if (String(req.user.id) !== String(app.owner)) {
         throw HttpError.Forbidden('you are not owner of this app');
-      }
+      } break;
+      default: throw HttpError.Forbidden('you are not owner of this app');
     }
     req.app = app;
     next();

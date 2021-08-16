@@ -19,6 +19,7 @@ import PublisherRouter from './router/PublisherRouter';
 import AdvertiserRouter from './router/AdvertiserRouter';
 import TagRouter from './router/TagRouter';
 import AdRequestRouter from './router/AdRequestRouter';
+import ImpressionRouter from './router/ImpressionRouter';
 
 const logger = Logger.child({ moduleName: 'Application' });
 
@@ -85,6 +86,7 @@ export default class Application {
       new AdvertiserRouter(),
       new TagRouter(),
       new AdRequestRouter(),
+      new ImpressionRouter(),
     ];
     if (process.env.NODE_ENV === 'test') routers.push(new TestRouter());
 
