@@ -29,6 +29,9 @@ export default class PublisherRouter extends BaseRouter {
         Tags.filterInput(blocked),
       ]).catch((err) => { throw HttpError.BadRequest(err.message); });
 
+      const existingApp = await App.findOne({ name });
+      if (existingApp) throw HttpError.Conflict(`app with name ${name} already exists`);
+
       const app = new App();
       app.name = name;
       app.owner = user.id;
@@ -39,7 +42,7 @@ export default class PublisherRouter extends BaseRouter {
         .then((mApp) => {
           res.status(BaseRouter.code.created).send({ app: mApp.toObject() });
         })
-        .catch((err) => next(HttpError.BadRequest(err.message)));
+        .catch((err) => { throw (HttpError.BadRequest(err.message)); });
     } catch (err) {
       next(err);
     }
