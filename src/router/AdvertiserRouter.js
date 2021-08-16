@@ -46,12 +46,15 @@ export default class AdvertiserRouter extends BaseRouter {
 
   async updateCampaign(req, res, next) {
     try {
-      const { user } = req;
-      const { name, tags = [], blocked = [], length = 30 } = req.body;
-
       const campaign = req.campaign;
+      const {
+        name = req.campaign.name,
+        tags = req.campaign.tags,
+        blocked = req.campaign.blocked,
+        length = req.campaign.length,
+      } = req.body;
+
       campaign.name = name;
-      campaign.owner = user.id;
       campaign.tags = tags;
       campaign.blocked = blocked;
       campaign.length = length;
