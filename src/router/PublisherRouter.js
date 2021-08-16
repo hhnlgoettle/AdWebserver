@@ -7,6 +7,7 @@ import HttpError from '../error/HttpError';
 import DisplayBlock from '../models/DisplayBlock';
 import Tags from '../constants/Tags';
 import resolveApp from '../logic/adRequest/resolveApp.middleware';
+import onSaveErrorHandler from '../util/onSaveErrorHandler';
 
 const myLogger = logger.child({ moduleName: 'PublisherRouter' });
 
@@ -29,20 +30,17 @@ export default class PublisherRouter extends BaseRouter {
         Tags.filterInput(blocked),
       ]).catch((err) => { throw HttpError.BadRequest(err.message); });
 
-      const existingApp = await App.findOne({ name });
-      if (existingApp) throw HttpError.Conflict(`app with name ${name} already exists`);
-
       const app = new App();
       app.name = name;
       app.owner = user.id;
       app.tags = tags;
       app.blocked = blocked;
       app.maxLength = maxLength;
-      app.save()
+      await app.save()
         .then((mApp) => {
           res.status(BaseRouter.code.created).send({ app: mApp.toObject() });
         })
-        .catch((err) => { throw (HttpError.BadRequest(err.message)); });
+        .catch((err) => { onSaveErrorHandler(err); });
     } catch (err) {
       next(err);
     }
@@ -82,16 +80,10 @@ export default class PublisherRouter extends BaseRouter {
       const app = req.app;
       if (String(app.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this app');
 
-      if (app.displayBlocks.length > 0) {
-        app.displayBlocks.forEach((block) => {
-          if (block.name === name) throw HttpError.Conflict(`DisplayBlock ${name} already exists for app ${app.name}`);
-        });
-      }
-
       const block = new DisplayBlock();
       block.name = name;
       app.displayBlocks.push(block);
-      await app.save();
+      await app.save().catch((err) => { onSaveErrorHandler(err); });
       res.status(BaseRouter.code.created).send({ app });
     } catch (err) {
       next(err);
