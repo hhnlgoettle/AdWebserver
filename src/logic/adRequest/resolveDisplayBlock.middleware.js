@@ -1,6 +1,19 @@
 import mongoose from 'mongoose';
 import HttpError from '../../error/HttpError';
 
+/**
+ * resolves a displayBlock for a given request
+ * populates req.displayBlock with found displayBlock
+ * note that this displayBlock is a sub-schema of app
+ * you can find the parent app in req.app
+ *
+ * needs req.params.displayBlockId to be set and valid
+ * needs req.app to be set. call resolveApp beforehand to populate req.app
+ * @param req
+ * @param res
+ * @param next
+ * @return {Promise<void>}
+ */
 export default async function resolveDisplayBlock(req, res, next) {
   try {
     const { displayBlockId } = req.params;
