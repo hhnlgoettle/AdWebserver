@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import DisplayBlock from './DisplayBlock';
 import HttpError from '../error/HttpError';
+import Tags from '../constants/Tags';
 
 const Schema = new mongoose.Schema({
   name: {
@@ -48,6 +49,18 @@ Schema.pre('save', async function save(next) {
           ? 1 : 1 + countPerField[block.name];
         if (countPerField[block.name] > 1) throw HttpError.Conflict(`DisplayBlock with name ${block.name} already exists`);
       });
+    }
+
+    // if tags are modified, check if those are valid
+    if (model.isModified('tags')) {
+      await Tags.filterInput(model.tags)
+        .catch((err) => { throw HttpError.BadRequest(err.message); });
+    }
+
+    // if tags are modified, check if those are valid
+    if (model.isModified('blocked')) {
+      await Tags.filterInput(model.blocked)
+        .catch((err) => { throw HttpError.BadRequest(err.message); });
     }
 
     return next();
