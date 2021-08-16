@@ -101,7 +101,7 @@ describe('AdvertiserRouter.js', () => {
     });
     it('upload creative', async () => {
       const campaign = await createCampaign(campaignName, customer.id);
-      return new Promise((resolve) => {
+      await new Promise((resolve) => {
         chai.request(server).post(`/advertiser/campaign/${campaign.id}/creative/upload`)
           .auth(token, { type: 'bearer' })
           .set('Content-Type', 'multipart/form-data')
@@ -115,6 +115,8 @@ describe('AdvertiserRouter.js', () => {
             resolve();
           });
       });
+      const files = await fsPromise.readdir(CreativePath.fsPath(campaign));
+      expect(files.length).to.equal(3);
     });
   });
 });
