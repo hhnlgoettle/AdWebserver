@@ -82,6 +82,12 @@ export default class PublisherRouter extends BaseRouter {
       const app = req.app;
       if (String(app.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this app');
 
+      if (app.displayBlocks.length > 0) {
+        app.displayBlocks.forEach((block) => {
+          if (block.name === name) throw HttpError.Conflict(`DisplayBlock ${name} already exists for app ${app.name}`);
+        });
+      }
+
       const block = new DisplayBlock();
       block.name = name;
       app.displayBlocks.push(block);
