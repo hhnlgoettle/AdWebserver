@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import HttpError from '../error/HttpError';
+import Tags from '../constants/Tags';
 
 const Schema = new mongoose.Schema({
   name: {
@@ -38,18 +39,19 @@ Schema.pre('save', async function save(next) {
       const filter = { name: model.name, owner: model.owner };
       if (model._id) filter._id = { $ne: null };
       const existing = await this.constructor.findOne(filter);
-      if (existing) throw HttpError.Conflict(`App with name ${model.name} already exists`);
+      if (existing) throw HttpError.Conflict(`Campaign with name ${model.name} already exists`);
     }
 
-    // displayBlocks is modified, check if name exists elsewhere
-    if (model.isModified('displayBlocks')) {
-      const { displayBlocks } = model;
-      const countPerField = {};
-      displayBlocks.forEach((block) => {
-        countPerField[block.name] = countPerField[block.name] == null
-          ? 1 : 1 + countPerField[block.name];
-        if (countPerField[block.name] > 1) throw HttpError.Conflict(`DisplayBlock with name ${block.name} already exists`);
-      });
+    // if tags are modified, check if those are valid
+    if (model.isModified('tags')) {
+      await Tags.filterInput(model.tags)
+        .catch((err) => { throw HttpError.BadRequest(err.message); });
+    }
+
+    // if tags are modified, check if those are valid
+    if (model.isModified('blocked')) {
+      await Tags.filterInput(model.blocked)
+        .catch((err) => { throw HttpError.BadRequest(err.message); });
     }
 
     return next();

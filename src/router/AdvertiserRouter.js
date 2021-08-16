@@ -7,7 +7,8 @@ import Campaign from '../models/Campaign';
 import MultiFileUploadController from '../logic/upload/MultiFileUploadController';
 import deleteDirContent from '../util/deleteCreative';
 import CreativePath from '../util/CreativePath';
-import Tags from '../constants/Tags';
+import onSaveErrorHandler from '../util/onSaveErrorHandler';
+import resolveCampaign from '../logic/adRequest/resolveCampaign.middleware';
 
 const myLogger = logger.child({ moduleName: 'AdvertiserRouter' });
 
@@ -15,9 +16,10 @@ export default class AdvertiserRouter extends BaseRouter {
   constructor() {
     super('/advertiser', myLogger);
     this.getRouter().post('/campaign', auth(customerAuth), this.createCampaign);
-    this.getRouter().get('/campaign/:id', auth(customerAuth), this.getCampaignById);
-    this.getRouter().post('/campaign/:id/creative/upload', auth(customerAuth), this.uploadCreative);
-    this.getRouter().delete('/campaign/:id/creative/delete', auth(customerAuth), this.deleteCreative);
+    this.getRouter().patch('/campaign/:campaignId', auth(customerAuth), resolveCampaign, this.updateCampaign);
+    this.getRouter().get('/campaign/:campaignId', auth(customerAuth), resolveCampaign, this.getCampaignById);
+    this.getRouter().post('/campaign/:campaignId/creative/upload', auth(customerAuth), resolveCampaign, this.uploadCreative);
+    this.getRouter().delete('/campaign/:campaignId/creative/delete', auth(customerAuth), resolveCampaign, this.deleteCreative);
     this.getRouter().get('/campaign', auth(customerAuth), this.getCampaigns);
   }
 
@@ -27,21 +29,36 @@ export default class AdvertiserRouter extends BaseRouter {
       const { name } = req.body;
       const { tags = [], blocked = [], length = 30 } = req.body;
 
-      await Promise.all([
-        Tags.filterInput(tags),
-        Tags.filterInput(blocked),
-      ]).catch((err) => { throw HttpError.BadRequest(err.message); });
-
       const campaign = new Campaign();
       campaign.name = name;
       campaign.owner = user.id;
       campaign.tags = tags;
       campaign.blocked = blocked;
       campaign.length = length;
-      campaign.save()
+      await campaign.save()
         .then((mCampaign) => {
           res.status(BaseRouter.code.created).send({ campaign: mCampaign.toObject() });
-        }).catch((err) => next(HttpError.BadRequest(err.message)));
+        }).catch((err) => onSaveErrorHandler(err));
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateCampaign(req, res, next) {
+    try {
+      const { user } = req;
+      const { name, tags = [], blocked = [], length = 30 } = req.body;
+
+      const campaign = req.campaign;
+      campaign.name = name;
+      campaign.owner = user.id;
+      campaign.tags = tags;
+      campaign.blocked = blocked;
+      campaign.length = length;
+      await campaign.save()
+        .then((mCampaign) => {
+          res.status(BaseRouter.code.okay).send({ campaign: mCampaign.toObject() });
+        }).catch((err) => onSaveErrorHandler(err));
     } catch (err) {
       next(err);
     }
@@ -49,13 +66,7 @@ export default class AdvertiserRouter extends BaseRouter {
 
   async getCampaignById(req, res, next) {
     try {
-      const { user } = req;
-      const { id } = req.params;
-
-      const campaign = await Campaign.findById(id);
-      if (String(campaign.owner) !== String(user.id)) throw HttpError.Forbidden('you are not owner of this campaign');
-
-      res.status(BaseRouter.code.okay).send({ campaign: campaign.toObject() });
+      res.status(BaseRouter.code.okay).send({ campaign: req.campaign.toObject() });
     } catch (err) {
       next(err);
     }
