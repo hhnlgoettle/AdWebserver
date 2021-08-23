@@ -1,0 +1,49 @@
+version: "3.6"
+services:
+  adwebserver:
+    container_name: iraAdWebserver
+    build:
+      context: repo/adwebserver/
+      dockerfile: Dockerfile
+    image: iraadwebserver
+    restart: always
+    volumes:
+      - ./keys:/usr/src/app/keys
+      - logs:/usr/src/app/logs
+      - publicData:/usr/src/app/public
+    env_file:
+      - .env
+    networks:
+      - proxy
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=${TRFK_BACKEND}"
+
+      - "traefik.http.routers.${TRFK_ROUTER}.entrypoints=http"
+      - "traefik.http.routers.${TRFK_SERVICE_SEC}.entrypoints=https"
+      - "traefik.http.middlewares.${TRFK_HTTPS_REDIRCT}.redirectscheme.scheme=https"
+      - "traefik.http.routers.${TRFK_ROUTER}.middlewares=${TRFK_HTTPS_REDIRCT}"
+
+      - "traefik.http.routers.${TRFK_ROUTER}.rule=Host(`${PREFIX}.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.${TRFK_SERVICE_SEC}.rule=Host(`${PREFIX}.${BASE_DOMAIN}`)"
+
+      - "traefik.http.services.${TRFK_SERVICE}.loadbalancer.server.port=${TRFK_PORT}"
+      - "traefik.http.services.${TRFK_SERVICE_SEC}.loadbalancer.server.port=${TRFK_PORT}"
+      - "traefik.http.routers.${TRFK_SERVICE}.service=${TRFK_SERVICE}"
+      - "traefik.http.routers.${TRFK_SERVICE_SEC}.service=${TRFK_SERVICE_SEC}"
+
+      - "traefik.http.routers.${TRFK_SERVICE_SEC}.tls=true"
+      - "traefik.http.routers.${TRFK_SERVICE_SEC}.tls.certresolver=${CERTRESOLVER}"
+
+      - "traefik.docker.network=${TRFK_NETWORK}"
+
+networks:
+  proxy:
+    external: true
+
+volumes:
+  logs:
+    name: AdWebserverLogs
+  publicData:
+    name: AdWebserverPublicData
