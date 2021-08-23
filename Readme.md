@@ -15,6 +15,9 @@ A server written in nodejs to deliver creatives to users.
 - copy `.env.example` to `.env`
 - update `.env` to match your configuration
 
+- generate a [RSA256 Key Pair](https://www.ssh.com/academy/ssh/keygen)
+- copy files `id_rsa` and `id_rsa.pub` into the `keys/` directory 
+
 ## Env vars
 
 `NODE_ENV` [development, production, test] set this to the matching environment
@@ -23,9 +26,7 @@ A server written in nodejs to deliver creatives to users.
 
 `CORS_WHITELIST` Array of hosts that are accepted for CORS
 
-`JWT_PUB_KEY` Public Key
-
-`JWT_PRIV_KEY` Private Key 
+`CORS_ALLOW_ALL` [true, false] if set to true, all CORS will always be reflected
 
 `MONGO_USER` Username of your MongoDB User
 
@@ -72,6 +73,10 @@ to remove the image: `docker compose -f mongo.docker-compose.yml down`
 to remove the image AND THE VOLUME: `docker compose -f mongo.docker-compose.yml --volumes down`
 
 to remove the volume `docker volume rm AdWebServerMongoDB`
+
+### As Docker Container
+
+- run `docker compose up`
 
 ## REST
 

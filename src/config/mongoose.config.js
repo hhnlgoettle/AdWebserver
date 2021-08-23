@@ -21,6 +21,7 @@ async function connectToDB() {
       authSource: process.env.MONGO_AUTH_DB,
     };
   }
+  myLogger.info(`connecting on url ${url}`);
   return new Promise((resolve, reject) => {
     mongoose.connect(url, {
       useNewUrlParser: true,

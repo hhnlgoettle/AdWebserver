@@ -17,7 +17,6 @@ export default class AdRequestRouter extends BaseRouter {
 
   async getAd(req, res, next) {
     try {
-      console.log({ req });
       // eslint-disable-next-line no-unused-vars
       const { cachedCreatives } = req.body || [];
       const appId = req.app._id;

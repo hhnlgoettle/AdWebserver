@@ -1,0 +1,27 @@
+version: "3.6"
+services:
+  adwebserver:
+    container_name: iraAdWebserver
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: iraadwebserver
+    restart: always
+    volumes:
+      - ./keys:/usr/src/app/keys
+      - logs:/usr/src/app/logs
+      - publicData:/usr/src/app/public
+    ports:
+      - ${REST_PORT}:${REST_PORT}
+    env_file:
+      - .env
+
+networks:
+  default:
+    name: mongo
+
+volumes:
+  logs:
+    name: AdWebserverLogs
+  publicData:
+    name: AdWebserverPublicData
