@@ -9,7 +9,7 @@ export default async function getCreativeDownloadUrls(url) {
   const dirContent = await fsPromise.readdir(`.${url}`).catch((err) => { throw new Error(err.message); });
   const urls = [];
   dirContent.forEach((f) => {
-    urls.push(CreativePath.joinPathAndFile(url, f));
+    urls.push({ url: CreativePath.joinPathAndFile(url, f), filename: f });
   });
   return urls;
 }
