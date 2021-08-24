@@ -1,5 +1,4 @@
 module.exports = {
-  plugins: ['@babel'],
   env: {
     es6: true,
     node: true,
@@ -14,9 +13,6 @@ module.exports = {
     sourceType: 'module',
     ecmaFeatures: {
       jsx: true,
-    },
-    babelOptions: {
-      configFile: './.babelrc',
     },
   },
   parser: '@babel/eslint-parser',

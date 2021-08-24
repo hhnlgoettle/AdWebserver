@@ -110,3 +110,14 @@ dist
 /.idea
 
 /dist
+
+
+/public/creatives/*
+!/public/*/.gitkeep
+
+
+
+/test/data/*
+!/test/data/.gitkeep
+
+
