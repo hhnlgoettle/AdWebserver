@@ -1,10 +1,6 @@
-import http from 'http';
+// this will populate process.env. do not move import './config/dotenv.config'; below Application
+import './config/dotenv.config';
+import Application from './backend';
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Hello World\n');
-}).listen(1337);
-
-console.log('Server running at http://127.0.0.1:1337/');
-
-export default server;
+const app = new Application();
+app.start();
