@@ -15,8 +15,8 @@ A server written in nodejs to deliver creatives to users.
 - copy `.env.example` to `.env`
 - update `.env` to match your configuration
 
-- generate a [RSA256 Key Pair](https://www.ssh.com/academy/ssh/keygen)
-- copy files `id_rsa` and `id_rsa.pub` into the `keys/` directory 
+- generate a [RSA key pair](https://www.ssh.com/academy/ssh/keygen)
+- copy generated key files `id_rsa` and `id_rsa.pub` into the `keys/` directory 
 
 ## Env vars
 
@@ -77,6 +77,15 @@ to remove the volume `docker volume rm AdWebServerMongoDB`
 ### As Docker Container
 
 - run `docker compose up`
+
+- run in background `docker compose up -d`
+
+### As Docker Container behind traefik proxy
+
+- run `docker compose -f traefik.docker-compose.yml up` 
+
+- run in background `docker compose -f traefik.docker-compose.yml up -d` 
+
 
 ## REST
 
