@@ -99,6 +99,7 @@ export default class AdvertiserRouter extends BaseRouter {
         throw HttpError.BadRequest('no files uploaded');
       }
       campaign.url = CreativePath.path(req.campaign);
+
       await campaign.save();
       res.status(BaseRouter.code.created).send({ campaign });
     } catch (err) {
@@ -113,6 +114,7 @@ export default class AdvertiserRouter extends BaseRouter {
       if (campaign.url == null || campaign.url.length === 0) throw (HttpError.BadRequest('campaign has no creative'));
       const deletedFiles = await deleteDirContent(`.${campaign.url}`);
       campaign.url = null;
+      campaign.creativeTimestamp = null;
       await campaign.save();
       res.status(BaseRouter.code.okay).send({ campaign, deletedFiles });
     } catch (err) {
