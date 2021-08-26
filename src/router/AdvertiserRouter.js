@@ -111,8 +111,7 @@ export default class AdvertiserRouter extends BaseRouter {
     try {
       const campaign = req.campaign;
 
-      if (campaign.url == null || campaign.url.length === 0) throw (HttpError.BadRequest('campaign has no creative'));
-      const deletedFiles = await deleteDirContent(`.${campaign.url}`);
+      const deletedFiles = await deleteDirContent(`.${CreativePath.fsPath(campaign)}`);
       campaign.url = null;
       campaign.creativeTimestamp = null;
       await campaign.save();
