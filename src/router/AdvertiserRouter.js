@@ -111,7 +111,7 @@ export default class AdvertiserRouter extends BaseRouter {
     try {
       const campaign = req.campaign;
 
-      const deletedFiles = await deleteDirContent(`.${CreativePath.fsPath(campaign)}`);
+      const deletedFiles = await deleteDirContent(CreativePath.fsPath(campaign));
       campaign.url = null;
       campaign.creativeTimestamp = null;
       await campaign.save();
