@@ -112,6 +112,33 @@ describe('AdvertiserRouter.js', () => {
             expect(res.body.campaign).to.be.an('object');
             expect(res.body.campaign.name).to.equal(campaignName);
             expect(res.body.campaign.url).to.equal(`${CreativePath.path(res.body.campaign)}`);
+            const creativeTimestampAsDate = new Date(res.body.campaign.creativeTimestamp);
+            // eslint-disable-next-line no-restricted-globals
+            expect(isNaN(creativeTimestampAsDate)).to.equal(false);
+            resolve();
+          });
+      });
+      const files = await fsPromise.readdir(CreativePath.fsPath(campaign));
+      expect(files.length).to.equal(3);
+    });
+
+    it('delete creative', async () => {
+      const campaign = await createCampaign(campaignName, customer.id);
+      await new Promise((resolve) => {
+        chai.request(server).post(`/advertiser/campaign/${campaign.id}/creative/upload`)
+          .auth(token, { type: 'bearer' })
+          .set('Content-Type', 'multipart/form-data')
+          .attach('creative', './test/spec/creative/index.html', 'index.html')
+          .attach('creative', './test/spec/creative/test.svg', 'test.svg')
+          .attach('creative', './test/spec/creative/test.js', 'test.js')
+          .end(() => {
+            chai.request(server).delete(`/advertiser/campaign/${campaign.id}/creative/delete`)
+              .auth(token, { type: 'bearer' })
+              .end((err, res) => {
+                expect(res.body.campaign.creativeTimestamp).to.equal(null);
+                expect(res.body.campaign.url).to.equal(null);
+              });
+
             resolve();
           });
       });
