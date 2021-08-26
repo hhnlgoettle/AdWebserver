@@ -41,6 +41,7 @@ export default class AdRequestRouter extends BaseRouter {
           campaignId,
           impressionId: impression._id,
           cached,
+          creativeTimestamp: ad.campaign.creativeTimestamp,
           downloadUrls },
       );
     } catch (err) {
