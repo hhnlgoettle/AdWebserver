@@ -1,5 +1,11 @@
 import HttpError from '../error/HttpError';
 
+/**
+ * @function decodeBasicAuth
+ * @param {{}}headers HttpHeaders from a request
+ * @desc retrieves basic auth header and decodes username and password
+ * @return {{password: string, username: string}}
+ */
 function decodeBasicAuth(headers) {
   if (headers == null) throw HttpError.Unauthorized('No headers present');
   const { authorization } = headers;

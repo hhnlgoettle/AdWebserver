@@ -1,3 +1,10 @@
+/**
+ * @module
+ * @description reads config from your .env file
+ * <p>make sure this file is executed prior to any other code execution</p>
+ * <p> reads keys from keys/ directory to JWT Signature</p>
+ */
+
 import fs from 'fs';
 import dotenv from 'dotenv';
 

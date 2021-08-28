@@ -2,8 +2,10 @@ import passport from 'passport';
 import HttpError from '../../error/HttpError';
 
 /**
- * @param {function} authModule
- * @return {function(...[*]=)}
+ * @function auth
+ * @desc authenticates using passport and a Bearer Token
+ * @param {function} authModule the authModule to use for authentication
+ * @return {function} middleware to use in requests
  */
 const auth = (authModule) => async (req, res, next) => {
   try {

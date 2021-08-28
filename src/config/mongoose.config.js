@@ -1,3 +1,9 @@
+/**
+ * @module
+ * @function connectToDB
+ * @description connects to database
+ * <p>refer to Readme.md for all .env options</p>
+ */
 import mongoose from 'mongoose';
 import getDatabaseName from '../util/getDatabaseName';
 import logger from '../core/logger';

@@ -1,3 +1,8 @@
+/**
+ * @function getDatabaseName
+ * @desc returns the database name depending on NODE_ENV environment
+ * @return {string}
+ */
 function getDatabaseName() {
   let dbName = process.env.MONGO_DB;
 

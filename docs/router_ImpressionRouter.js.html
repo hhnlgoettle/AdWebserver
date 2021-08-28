@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: router/ImpressionRouter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: router/ImpressionRouter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import BaseRouter from '../core/BaseRouter';
+import logger from '../core/logger';
+import onSaveErrorHandler from '../util/onSaveErrorHandler';
+import resolveImpression from '../logic/adRequest/resolveImpression.middleware';
+import HttpError from '../error/HttpError';
+import customerAuth from '../logic/login/customerAuth';
+import auth from '../logic/login/auth';
+import resolveCampaign from '../logic/adRequest/resolveCampaign.middleware';
+import Impression from '../models/Impression';
+import resolveApp from '../logic/adRequest/resolveApp.middleware';
+import resolveDisplayBlock from '../logic/adRequest/resolveDisplayBlock.middleware';
+
+const myLogger = logger.child({ moduleName: 'AdminRouter' });
+
+export default class AdminRouter extends BaseRouter {
+  constructor() {
+    super('/impression', myLogger);
+    this.getRouter().post('/:impressionId', resolveImpression, this.postImpression);
+    this.getRouter().get('/campaign/:campaignId', auth(customerAuth), resolveCampaign, this.getStatsForCampaign);
+    this.getRouter().get('/app/:appId', auth(customerAuth), resolveApp, this.getStatsForApp);
+    this.getRouter().get('/app/:appId/displayBlock/:displayBlockId', auth(customerAuth), resolveApp, resolveDisplayBlock, this.getStatsForDisplayBlock);
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Impression
+   * @api {POST} /impression/:impressionId
+   * @apiName Post Impression Data
+   * @apiParam {String} impressionId the id of the impression
+   *
+   * @apiParam (Request Body) {Object} data all impression data under this key
+   *
+   * @apiSuccess {Object} impression the impression
+   * @apiSuccess {String} impression.displayBlockId id of the display block
+   * @apiSuccess {String} impression.campaignId id of campaign
+   * @apiSuccess {String} impression._id id of impression. used later to post data
+   * @apiSuccess {Object} impression.data data collected during impression
+   */
+  async postImpression(req, res, next) {
+    try {
+      const impression = req.impression;
+
+      if (impression.data) throw HttpError.Conflict(`impression with id ${impression.id} has already stats set`);
+
+      const { data } = req.body;
+      impression.data = data;
+      await impression.save().catch((err) => onSaveErrorHandler(err));
+      res.status(BaseRouter.code.okay).json({ impression: req.impression });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Impression
+   * @api {GET} /impression/campaign/:campaignId
+   * @apiHeader {String} authorization JWT_Token
+   * @apiName Get Impressions for campaign
+   * @apiParam {String} campaignId the id of the campaign
+   *
+   * @apiSuccess {Object[]} impressions array of impressions
+   * @apiSuccess {String} impressions.displayBlockId id of the display block
+   * @apiSuccess {String} impressions.campaignId id of campaign
+   * @apiSuccess {String} impressions._id id of impression. used later to post data
+   * @apiSuccess {Object} impressions.data data collected during impression
+   */
+  async getStatsForCampaign(req, res, next) {
+    try {
+      const campaign = req.campaign;
+
+      const impressions = await Impression.find({ campaignId: campaign._id });
+      res.status(BaseRouter.code.okay).json({ impressions });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Impression
+   * @api {GET} /impression/app/:appId
+   * @apiHeader {String} authorization JWT_Token
+   * @apiName Get Impressions for app
+   * @apiParam {String} appId the id of the app
+   *
+   * @apiSuccess {Object[]} impressions array of impressions
+   * @apiSuccess {String} impressions.displayBlockId id of the display block
+   * @apiSuccess {String} impressions.campaignId id of campaign
+   * @apiSuccess {String} impressions._id id of impression. used later to post data
+   * @apiSuccess {Object} impressions.data data collected during impression
+   */
+  async getStatsForApp(req, res, next) {
+    try {
+      const app = req.app;
+
+      const impressions = await Impression.find({ appId: app._id });
+      res.status(BaseRouter.code.okay).json({ impressions });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Impression
+   * @api {GET} /impression/app/:appId/displayBlock/:displayBlockId
+   * @apiHeader {String} authorization JWT_Token
+   * @apiName Get Impressions for a single displayBlock
+   * @apiParam {String} appId the id of the app
+   * @apiParam {String} displayBlockId the id of the displayBlock
+   *
+   * @apiSuccess {Object[]} impressions array of impressions
+   * @apiSuccess {String} impressions.displayBlockId id of the display block
+   * @apiSuccess {String} impressions.campaignId id of campaign
+   * @apiSuccess {String} impressions._id id of impression. used later to post data
+   * @apiSuccess {Object} impressions.data data collected during impression
+   */
+  async getStatsForDisplayBlock(req, res, next) {
+    try {
+      const displayBlock = req.displayBlock;
+
+      const impressions = await Impression.find({ displayBlockId: displayBlock._id });
+      res.status(BaseRouter.code.okay).json({ impressions });
+    } catch (err) {
+      next(err);
+    }
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="config_dotenv.module_config.html">config</a></li><li><a href="module-fsPromise.html">fsPromise</a></li></ul><h3>Classes</h3><ul><li><a href="AdMatchFinder.html">AdMatchFinder</a></li><li><a href="Application.html">Application</a></li><li><a href="BaseRouter.html">BaseRouter</a></li><li><a href="CreativePath.html">CreativePath</a></li><li><a href="HttpError.html">HttpError</a></li><li><a href="HttpErrorHandler.html">HttpErrorHandler</a></li><li><a href="module.exports_module.exports.html">exports</a></li><li><a href="MultiFileUploadController.html">MultiFileUploadController</a></li><li><a href="Tag.html">Tag</a></li><li><a href="Tags.html">Tags</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accessControl">accessControl</a></li><li><a href="global.html#addGuestUser">addGuestUser</a></li><li><a href="global.html#adminAuth">adminAuth</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#connectToDB">connectToDB</a></li><li><a href="global.html#corsOptionsDelegate">corsOptionsDelegate</a></li><li><a href="global.html#createApp">createApp</a></li><li><a href="global.html#createCampaign">createCampaign</a></li><li><a href="global.html#createDirIfNotExists">createDirIfNotExists</a></li><li><a href="global.html#createDisplayBlock">createDisplayBlock</a></li><li><a href="global.html#createEmptyImpression">createEmptyImpression</a></li><li><a href="global.html#customerAuth">customerAuth</a></li><li><a href="global.html#decodeBasicAuth">decodeBasicAuth</a></li><li><a href="global.html#deleteCreative">deleteCreative</a></li><li><a href="global.html#deleteDirContent">deleteDirContent</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAd">getAd</a></li><li><a href="global.html#getAppById">getAppById</a></li><li><a href="global.html#getApps">getApps</a></li><li><a href="global.html#getCampaignById">getCampaignById</a></li><li><a href="global.html#getCampaigns">getCampaigns</a></li><li><a href="global.html#getCreativeDownloadUrls">getCreativeDownloadUrls</a></li><li><a href="global.html#getDatabaseName">getDatabaseName</a></li><li><a href="global.html#getStatsForApp">getStatsForApp</a></li><li><a href="global.html#getStatsForCampaign">getStatsForCampaign</a></li><li><a href="global.html#getStatsForDisplayBlock">getStatsForDisplayBlock</a></li><li><a href="global.html#getTags">getTags</a></li><li><a href="global.html#isAdCachedByUser">isAdCachedByUser</a></li><li><a href="global.html#login">login</a></li><li><a href="global.html#onSaveErrorHandler">onSaveErrorHandler</a></li><li><a href="global.html#passportAuthStrategy">passportAuthStrategy</a></li><li><a href="global.html#postImpression">postImpression</a></li><li><a href="global.html#register">register</a></li><li><a href="global.html#resolveApp">resolveApp</a></li><li><a href="global.html#resolveCampaign">resolveCampaign</a></li><li><a href="global.html#resolveDisplayBlock">resolveDisplayBlock</a></li><li><a href="global.html#resolveImpression">resolveImpression</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#updateApp">updateApp</a></li><li><a href="global.html#updateCampaign">updateCampaign</a></li><li><a href="global.html#updateDisplayBlock">updateDisplayBlock</a></li><li><a href="global.html#uploadCreative">uploadCreative</a></li><li><a href="global.html#verifyHash">verifyHash</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Aug 28 2021 16:35:27 GMT+0200 (Mitteleuropäische Sommerzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

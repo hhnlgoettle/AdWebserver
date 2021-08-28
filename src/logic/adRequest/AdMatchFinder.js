@@ -1,6 +1,18 @@
 import Campaign from '../../models/Campaign';
 
-export default class AdMatchFinder {
+/**
+ * @module
+ * @class AdMatchFinder
+ * @desc Class to find matching ad campaign for an app
+ * @type {AdMatchFinder}
+ */
+const AdMatchFinder = class AdMatchFinder {
+  /**
+   * @desc return an array of Campaigns that match the app
+   * @param {Array<String>}appBlocked array of blocked tags by app
+   * @param {Array<String>} appTags tags of the app
+   * @return {Promise<Array<Campaign>>}
+   */
   async findNotBlockedCampaigns(appBlocked, appTags = []) {
     return Campaign.find({
       // ignore where url is not set -> no creative
@@ -13,9 +25,9 @@ export default class AdMatchFinder {
   }
 
   /**
-   * find a matching ad for a creative
-   * @param {App.js} app
-   * @param {DisplayBlock.js} displayBlock
+   * @desc find a matching ad for a creative
+   * @param {App} app
+   * @param {DisplayBlock} displayBlock
    */
   async findAdForDisplayBlock({ app }) {
     const campaigns = await this.findNotBlockedCampaigns(app.blocked, app.tags);
@@ -25,4 +37,6 @@ export default class AdMatchFinder {
     const randomIndex = Math.floor(Math.random() * candidateLength);
     return { campaign: campaigns[randomIndex] };
   }
-}
+};
+
+export default AdMatchFinder;

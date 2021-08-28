@@ -15,6 +15,15 @@ export default class AdminRouter extends BaseRouter {
     this.getRouter().get('/register', this.register);
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Admin
+   * @api {GET} /admin/login Login as an Admin
+   * @apiName Login as an Admin
+   * @apiHeader {String} authorization BasicAuth (username:password)
+   * @apiSuccess {String} token the JWT token used to authenticate
+   *
+   */
   async login(req, res, next) {
     try {
       const { username, password } = decodeBasicAuth(req.headers);
@@ -32,6 +41,23 @@ export default class AdminRouter extends BaseRouter {
     }
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Admin
+   * @api {GET} /admin/register Register as an Admin
+   * @apiName Register as an Admin
+   * @apiHeader {String} authorization BasicAuth (username:password)
+   * @apiSuccess {Object} user
+   * @apiSuccess {String} user.role
+   * @apiSuccess {Boolean} user.confirmed
+   * @apiSuccess {String} user._id
+   * @apiSuccess {String} user.username
+   * @apiSuccess {Number} user.userId
+   * @apiSuccess {String} user.id
+   * @apiDescription admin accunt has to be manually
+   * confirmed in the database by setting the field "confirmed" to true
+   *
+   */
   async register(req, res, next) {
     try {
       const { username, password } = decodeBasicAuth(req.headers);

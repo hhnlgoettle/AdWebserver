@@ -23,12 +23,27 @@ import ImpressionRouter from './router/ImpressionRouter';
 
 const logger = Logger.child({ moduleName: 'Application' });
 
-export default class Application {
+/**
+ * @module
+ * @class Application
+ * @type {Application}
+ * @property {express} appM the Express App
+ * @property {Server} serverM the Server
+ * @desc serves requests
+ */
+const Application = class Application {
+  /**
+   * @constructor
+   */
   constructor() {
     this.appM = express();
     this.serverM = new Server(this.appM);
   }
 
+  /**
+   * @desc starts the server
+   * @return {Promise<Boolean>}
+   */
   start() {
     this.initApp();
     this.initDatabase();
@@ -44,6 +59,10 @@ export default class Application {
     });
   }
 
+  /**
+   * @desc closes the server
+   * @return {Promise<Boolean>}
+   */
   close() {
     return new Promise((resolve, reject) => {
       this.serverM.close((err) => {
@@ -53,6 +72,9 @@ export default class Application {
     });
   }
 
+  /**
+   * @desc initializes the Server
+   */
   initApp() {
     this.appM.use(bodyParser.json({ limit: '10mb' }));
     this.appM.use(bodyParser.urlencoded({ limit: '10mb', extended: false }));
@@ -67,6 +89,9 @@ export default class Application {
     this.appM.use(serverLogger);
   }
 
+  /**
+   * @desc initializes database connection
+   */
   initDatabase() {
     connectToDB().catch((err) => {
       logger.error(err);
@@ -74,10 +99,16 @@ export default class Application {
     });
   }
 
+  /**
+   * @desc initializes passport
+   */
   initPassport() {
     passportAuthStrategy(passport);
   }
 
+  /**
+   * @desc adds routers to the server
+   */
   addRouters() {
     const routers = [
       new AdminRouter(),
@@ -103,7 +134,12 @@ export default class Application {
     });
   }
 
+  /**
+   * @desc adds an HttpErrorHandler as middleware
+   */
   addErrorHandler() {
     this.appM.use(HttpErrorHandler.middleware);
   }
-}
+};
+
+export default Application;

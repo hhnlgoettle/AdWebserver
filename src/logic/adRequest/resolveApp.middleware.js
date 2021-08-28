@@ -2,12 +2,14 @@ import App from '../../models/App';
 import HttpError from '../../error/HttpError';
 
 /**
- * resolves an app for a given request
- * populates req.app with found app
- * note that this app is a mongoose model
+ * @function resolveApp
+ * @desc
+ * <p>resolves an app for a given request
+ * <p>populates req.app with found app
+ * <p>note that this app is a mongoose model
  *
- * needs req.params.appId to be set and valid
- * needs req.user to be set. call auth() middleware beforehand to populate req.user
+ * <p>needs req.params.appId to be set and valid
+ * <p>needs req.user to be set. call auth() middleware beforehand to populate req.user
  * @param req
  * @param res
  * @param next

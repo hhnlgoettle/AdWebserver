@@ -3,9 +3,11 @@ import Logger from '../core/logger';
 const logger = Logger.child({ moduleName: 'HttpErrorHandler' });
 
 /**
- * handles http errors, sets status etc
+ * @module
+ * @class HttpErrorHandler
+ * @desc static class that handles HttpErrors as a middleware
  */
-export default class HttpErrorHandler {
+const HttpErrorHandler = class HttpErrorHandler {
   static middleware(err, req, res, next) {
     try {
       if (err.isHttpError) {
@@ -13,6 +15,7 @@ export default class HttpErrorHandler {
         next();
         return;
       }
+      // if its not a HttpError, throw an Internal Server Error
       logger.error(err);
       logger.error(err.stack);
       res.status(500).send({ message: 'Internal Server Error' });
@@ -21,4 +24,6 @@ export default class HttpErrorHandler {
       next(err);
     }
   }
-}
+};
+
+export default HttpErrorHandler;
