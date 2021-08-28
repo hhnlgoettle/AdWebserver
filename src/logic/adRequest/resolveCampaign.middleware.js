@@ -3,12 +3,14 @@ import HttpError from '../../error/HttpError';
 import Campaign from '../../models/Campaign';
 
 /**
- * resolves a campaign for a given request
- * populates req.campaign with found campaign
- * note that this campaign is a mongoose model
+ * @function resolveCampaign
+ * @desc
+ * <p>resolves a campaign for a given request
+ * <p>populates req.campaign with found campaign
+ * <p>note that this campaign is a mongoose model
  *
- * needs req.params.campaignId to be set and valid
- * needs req.user to be set. call auth() middleware beforehand to populate req.user
+ * <p>needs req.params.campaignId to be set and valid
+ * <p>needs req.user to be set. call auth() middleware beforehand to populate req.user
  * @param req
  * @param res
  * @param next

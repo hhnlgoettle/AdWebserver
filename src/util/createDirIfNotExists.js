@@ -1,6 +1,12 @@
 import fs from 'fs';
 import HttpError from '../error/HttpError';
 
+/**
+ * @function createDirIfNotExists
+ * @desc creates a directory if it does not exist
+ * @param {String} path
+ * @return {Promise}
+ */
 export default async function createDirIfNotExists(path) {
   return new Promise((resolve, reject) => {
     // eslint-disable-next-line no-unused-vars

@@ -3,11 +3,13 @@ import HttpError from '../../error/HttpError';
 import Impression from '../../models/Impression';
 
 /**
- * resolves a Impression for a given request
- * populates req.impression with found impression
- * note that this impression is a mongoose model
+ * @function resolveImpression
+ * @desc
+ * <p>resolves a Impression for a given request
+ * <p>populates req.impression with found impression
+ * <p>note that this impression is a mongoose model
  *
- * needs req.params.impressionId to be set and valid
+ * <p>needs req.params.impressionId to be set and valid
  * @param req
  * @param res
  * @param next

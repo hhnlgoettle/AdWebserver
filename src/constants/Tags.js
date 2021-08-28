@@ -19,25 +19,53 @@ function convertTagArrayToObject(arr) {
   return obj;
 }
 
+/**
+ * @module
+ * @class Tags
+ * @description contains all known tags
+ * @property {Array<Tag>}tags all known tags
+ */
 class Tags {
+  /**
+   * @constructor
+   * @param tags
+   */
   constructor(tags) {
     this.tags = tags;
     this.tagsObj = convertTagArrayToObject(tags);
     this.tagValues = this.tags.map((t) => t.name);
   }
 
+  /**
+   * @description return all tags
+   * @return {Array<Tag>}
+   */
   getTags() {
     return this.tags;
   }
 
+  /**
+   * @desc returns all tags as an Object where Tags' names are the keys
+   * @return {Object}
+   */
   getTagsAsObject() {
     return this.tagsObj;
   }
 
+  /**
+   * @desc looks up if tag is known
+   * @param {String} tag
+   * @return {*}
+   */
   isKnownTag(tag) {
     return this.tagValues.includes(tag);
   }
 
+  /**
+   * @desc checks if all tags in an array are known
+   * @param {Array<String>}tagArr
+   * @return {Promise<boolean>}
+   */
   async filterInput(tagArr) {
     tagArr.forEach((t) => {
       if (this.isKnownTag(t) === false) {

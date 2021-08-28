@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: router/AdvertiserRouter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: router/AdvertiserRouter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import BaseRouter from '../core/BaseRouter';
+import logger from '../core/logger';
+import customerAuth from '../logic/login/customerAuth';
+import auth from '../logic/login/auth';
+import HttpError from '../error/HttpError';
+import Campaign from '../models/Campaign';
+import MultiFileUploadController from '../logic/upload/MultiFileUploadController';
+import deleteDirContent from '../util/deleteCreative';
+import CreativePath from '../util/CreativePath';
+import onSaveErrorHandler from '../util/onSaveErrorHandler';
+import resolveCampaign from '../logic/adRequest/resolveCampaign.middleware';
+
+const myLogger = logger.child({ moduleName: 'AdvertiserRouter' });
+
+export default class AdvertiserRouter extends BaseRouter {
+  constructor() {
+    super('/advertiser', myLogger);
+    this.getRouter().post('/campaign', auth(customerAuth), this.createCampaign);
+    this.getRouter().patch('/campaign/:campaignId', auth(customerAuth), resolveCampaign, this.updateCampaign);
+    this.getRouter().get('/campaign/:campaignId', auth(customerAuth), resolveCampaign, this.getCampaignById);
+    this.getRouter().post('/campaign/:campaignId/creative/upload', auth(customerAuth), resolveCampaign, this.uploadCreative);
+    this.getRouter().delete('/campaign/:campaignId/creative/delete', auth(customerAuth), resolveCampaign, this.deleteCreative);
+    this.getRouter().get('/campaign', auth(customerAuth), this.getCampaigns);
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Advertiser
+   * @api {POST} /advertiser/campaign
+   * @apiName Create a campaign
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam (Request Body) {String} name the campaigns name
+   * @apiParam (Request Body) {String[]} tags tags for the campaign
+   * @apiParam (Request Body) {String[]} blocked which tags this campaign blocks
+   * @apiParam (Request Body) {Number} length the length of the ad in seconds
+   *
+   * @apiSuccess {Object} campaign
+   * @apiSuccess {String} campaign._id the campaigns id
+   * @apiSuccess {String} campaign.name
+   * @apiSuccess {String} campaign.owner id of customer who owns this campaign
+   * @apiSuccess {Number} campaign.length length in seconds of campaign
+   * @apiSuccess {String} campaign.url url from which creative can be downloaded.
+   * @apiSuccess {String} campaign.creativeTimestamp timestamp when creative was uploaded.
+   * @apiSuccess {String[]} campaign.tags tags to describe this campaign
+   * @apiSuccess {String[]} campaign.blocked blocked tags by this campaign
+   */
+  async createCampaign(req, res, next) {
+    try {
+      const { user } = req;
+      const { name } = req.body;
+      const { tags = [], blocked = [], length = 30 } = req.body;
+
+      const campaign = new Campaign();
+      campaign.name = name;
+      campaign.owner = user.id;
+      campaign.tags = tags;
+      campaign.blocked = blocked;
+      campaign.length = length;
+      await campaign.save()
+        .then((mCampaign) => {
+          res.status(BaseRouter.code.created).send({ campaign: mCampaign.toObject() });
+        }).catch((err) => onSaveErrorHandler(err));
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Advertiser
+   * @api {PATCH} /advertiser/campaign/:campaignId
+   * @apiName Update a campaign
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} campaignId the campaign to update
+   *
+   * @apiParam (Request Body) {String} name the campaigns name
+   * @apiParam (Request Body) {String[]} tags tags for the campaign
+   * @apiParam (Request Body) {String[]} blocked which tags this campaign blocks
+   * @apiParam (Request Body) {Number} length the length of the ad in seconds
+   *
+   * @apiSuccess {Object} campaign
+   * @apiSuccess {String} campaign._id the campaigns id
+   * @apiSuccess {String} campaign.name
+   * @apiSuccess {String} campaign.owner id of customer who owns this campaign
+   * @apiSuccess {Number} campaign.length length in seconds of campaign
+   * @apiSuccess {String} campaign.url url from which creative can be downloaded.
+   * @apiSuccess {String} campaign.creativeTimestamp timestamp when creative was uploaded.
+   * @apiSuccess {String[]} campaign.tags tags to describe this campaign
+   * @apiSuccess {String[]} campaign.blocked blocked tags by this campaign
+   */
+  async updateCampaign(req, res, next) {
+    try {
+      const campaign = req.campaign;
+      const {
+        name = req.campaign.name,
+        tags = req.campaign.tags,
+        blocked = req.campaign.blocked,
+        length = req.campaign.length,
+      } = req.body;
+
+      campaign.name = name;
+      campaign.tags = tags;
+      campaign.blocked = blocked;
+      campaign.length = length;
+      await campaign.save()
+        .then((mCampaign) => {
+          res.status(BaseRouter.code.okay).send({ campaign: mCampaign.toObject() });
+        }).catch((err) => onSaveErrorHandler(err));
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Advertiser
+   * @api {GET} /advertiser/campaign/:campaignId
+   * @apiName Create a campaign
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} campaignId the campaign to update
+   *
+   * @apiSuccess {Object[]} campaign
+   * @apiSuccess {String} campaign._id the campaigns id
+   * @apiSuccess {String} campaign.name
+   * @apiSuccess {String} campaign.owner id of customer who owns this campaign
+   * @apiSuccess {Number} campaign.length length in seconds of campaign
+   * @apiSuccess {String} campaign.url url from which creative can be downloaded.
+   * @apiSuccess {String} campaign.creativeTimestamp timestamp when creative was uploaded.
+   * @apiSuccess {String[]} campaign.tags tags to describe this campaign
+   * @apiSuccess {String[]} campaign.blocked blocked tags by this campaign
+   */
+  async getCampaignById(req, res, next) {
+    try {
+      res.status(BaseRouter.code.okay).send({ campaign: req.campaign.toObject() });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Advertiser
+   * @api {GET} /advertiser/campaign
+   * @apiName get all campaigns from a customer
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiSuccess {Object[]} campaigns
+   * @apiSuccess {String} campaigns._id the campaigns id
+   * @apiSuccess {String} campaigns.name
+   * @apiSuccess {String} campaigns.owner id of customer who owns this campaign
+   * @apiSuccess {Number} campaigns.length length in seconds of campaign
+   * @apiSuccess {String} campaigns.url url from which creative can be downloaded.
+   * only set if creative is uploaded
+   * @apiSuccess {String} campaigns.creativeTimestamp timestamp when creative was uploaded.
+   * only set when creative is uploaded
+   * @apiSuccess {String[]} campaigns.tags tags to describe this campaign
+   * @apiSuccess {String[]} campaigns.blocked blocked tags by this campaign
+   */
+  async getCampaigns(req, res, next) {
+    try {
+      const { user } = req;
+
+      const campaigns = await Campaign.find({ owner: user.id });
+      campaigns.map((a) => a.toObject());
+      res.status(BaseRouter.code.okay).send({ campaigns });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Advertiser
+   * @api {POST} /advertiser/campaign/:campaignId/creative/upload
+   * @apiName Upload creative for campaign
+   *
+   * @apiDescription
+   * &lt;p> content-type has to be multipart/formdata&lt;/p>
+   * &lt;p>each file's key in form-data has to be "creative"&lt;/p>
+   *
+   * @apiHeader {String} authorization JWT_Token
+   * @apiHeader {String} content-type=multipart/form-data;
+   *
+   * @apiParam (Request Body form-data) {Object[]} files the creative
+   * @apiParam (Request Body form-data) {String} files.key=creative
+   * @apiParam (Request Body form-data) {Object[]} files.value path to file
+   *
+   * @apiSuccess {Object} campaign
+   * @apiSuccess {String} campaign._id the campaigns id
+   * @apiSuccess {String} campaign.name
+   * @apiSuccess {String} campaign.owner id of customer who owns this campaign
+   * @apiSuccess {Number} campaign.length length in seconds of campaign
+   * @apiSuccess {String} campaign.url url from which creative can be downloaded.
+   * @apiSuccess {String} campaign.creativeTimestamp timestamp when creative was uploaded.
+   * @apiSuccess {String[]} campaign.tags tags to describe this campaign
+   * @apiSuccess {String[]} campaign.blocked blocked tags by this campaign
+   */
+  async uploadCreative(req, res, next) {
+    try {
+      const campaign = req.campaign;
+      const controller = new MultiFileUploadController();
+      await controller.upload(req)
+        .catch((err) => {
+          throw (err);
+        });
+      if (controller.filesCount === 0) {
+        throw HttpError.BadRequest('no files uploaded');
+      }
+      campaign.url = CreativePath.path(req.campaign);
+
+      await campaign.save();
+      res.status(BaseRouter.code.created).send({ campaign });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Advertiser
+   * @api {DELETE} /advertiser/campaign/:campaignId/creative/delete
+   * @apiName delete creative for campaign
+   *
+   *
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiSuccess {Number} deletedFiles Number of files deleted
+   * @apiSuccess {Object} campaign
+   * @apiSuccess {String} campaign._id the campaigns id
+   * @apiSuccess {String} campaign.name
+   * @apiSuccess {String} campaign.owner id of customer who owns this campaign
+   * @apiSuccess {Number} campaign.length length in seconds of campaign
+   * @apiSuccess {String} campaign.url=null url from which creative can be downloaded.
+   * @apiSuccess {String} campaign.creativeTimestamp=null timestamp when creative was uploaded.
+   * @apiSuccess {String[]} campaign.tags tags to describe this campaign
+   * @apiSuccess {String[]} campaign.blocked blocked tags by this campaign
+   */
+  async deleteCreative(req, res, next) {
+    try {
+      const campaign = req.campaign;
+
+      const deletedFiles = await deleteDirContent(CreativePath.fsPath(campaign));
+      campaign.url = null;
+      campaign.creativeTimestamp = null;
+      await campaign.save();
+      res.status(BaseRouter.code.okay).send({ campaign, deletedFiles });
+    } catch (err) {
+      next(err);
+    }
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="config_dotenv.module_config.html">config</a></li><li><a href="module-fsPromise.html">fsPromise</a></li></ul><h3>Classes</h3><ul><li><a href="AdMatchFinder.html">AdMatchFinder</a></li><li><a href="Application.html">Application</a></li><li><a href="BaseRouter.html">BaseRouter</a></li><li><a href="CreativePath.html">CreativePath</a></li><li><a href="HttpError.html">HttpError</a></li><li><a href="HttpErrorHandler.html">HttpErrorHandler</a></li><li><a href="module.exports_module.exports.html">exports</a></li><li><a href="MultiFileUploadController.html">MultiFileUploadController</a></li><li><a href="Tag.html">Tag</a></li><li><a href="Tags.html">Tags</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accessControl">accessControl</a></li><li><a href="global.html#addGuestUser">addGuestUser</a></li><li><a href="global.html#adminAuth">adminAuth</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#connectToDB">connectToDB</a></li><li><a href="global.html#corsOptionsDelegate">corsOptionsDelegate</a></li><li><a href="global.html#createApp">createApp</a></li><li><a href="global.html#createCampaign">createCampaign</a></li><li><a href="global.html#createDirIfNotExists">createDirIfNotExists</a></li><li><a href="global.html#createDisplayBlock">createDisplayBlock</a></li><li><a href="global.html#createEmptyImpression">createEmptyImpression</a></li><li><a href="global.html#customerAuth">customerAuth</a></li><li><a href="global.html#decodeBasicAuth">decodeBasicAuth</a></li><li><a href="global.html#deleteCreative">deleteCreative</a></li><li><a href="global.html#deleteDirContent">deleteDirContent</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAd">getAd</a></li><li><a href="global.html#getAppById">getAppById</a></li><li><a href="global.html#getApps">getApps</a></li><li><a href="global.html#getCampaignById">getCampaignById</a></li><li><a href="global.html#getCampaigns">getCampaigns</a></li><li><a href="global.html#getCreativeDownloadUrls">getCreativeDownloadUrls</a></li><li><a href="global.html#getDatabaseName">getDatabaseName</a></li><li><a href="global.html#getStatsForApp">getStatsForApp</a></li><li><a href="global.html#getStatsForCampaign">getStatsForCampaign</a></li><li><a href="global.html#getStatsForDisplayBlock">getStatsForDisplayBlock</a></li><li><a href="global.html#getTags">getTags</a></li><li><a href="global.html#isAdCachedByUser">isAdCachedByUser</a></li><li><a href="global.html#login">login</a></li><li><a href="global.html#onSaveErrorHandler">onSaveErrorHandler</a></li><li><a href="global.html#passportAuthStrategy">passportAuthStrategy</a></li><li><a href="global.html#postImpression">postImpression</a></li><li><a href="global.html#register">register</a></li><li><a href="global.html#resolveApp">resolveApp</a></li><li><a href="global.html#resolveCampaign">resolveCampaign</a></li><li><a href="global.html#resolveDisplayBlock">resolveDisplayBlock</a></li><li><a href="global.html#resolveImpression">resolveImpression</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#updateApp">updateApp</a></li><li><a href="global.html#updateCampaign">updateCampaign</a></li><li><a href="global.html#updateDisplayBlock">updateDisplayBlock</a></li><li><a href="global.html#uploadCreative">uploadCreative</a></li><li><a href="global.html#verifyHash">verifyHash</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Aug 28 2021 16:35:27 GMT+0200 (Mitteleuropäische Sommerzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

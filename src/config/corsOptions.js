@@ -1,3 +1,12 @@
+/**
+ * @module
+ * @function corsOptionsDelegate
+ * @description checks requests' origin header against whitelist
+ * <p>set CORS_WHITELIST in your .env file to include known hosts</p>
+ * <p>set CORS_ALLOW_ALL in your .env file allow cors for all origins</p>
+ * @param {Request} req
+ * @param {Function} callback
+ */
 const envWhitelist = process.env.CORS_WHITELIST;
 const { CORS_ALLOW_ALL = false } = process.env;
 // parse whitelist. if whitelist is read as string parse to array

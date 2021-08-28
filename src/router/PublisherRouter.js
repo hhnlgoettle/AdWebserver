@@ -21,6 +21,30 @@ export default class PublisherRouter extends BaseRouter {
     this.getRouter().patch('/app/:appId/displayblock/:displayBlockId', auth(customerAuth), resolveApp, resolveDisplayBlock, this.updateDisplayBlock);
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {POST} /publisher/app
+   * @apiName Create an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam (Request Body) {String} name the app's name
+   * @apiParam (Request Body) {String[]} tags tags for the app
+   * @apiParam (Request Body) {String[]} blocked which tags this app blocks
+   * @apiParam (Request Body) {Number} maxLength maximum Length of Creatives
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
   async createApp(req, res, next) {
     try {
       const { user } = req;
@@ -43,6 +67,31 @@ export default class PublisherRouter extends BaseRouter {
     }
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {PATCH} /publisher/app:/appId
+   * @apiName Update an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   * @apiParam (Request Body) {String} name the app's name
+   * @apiParam (Request Body) {String[]} tags tags for the app
+   * @apiParam (Request Body) {String[]} blocked which tags this app blocks
+   * @apiParam (Request Body) {Number} maxLength maximum Length of Creatives
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
   async updateApp(req, res, next) {
     try {
       const app = req.app;
@@ -67,6 +116,27 @@ export default class PublisherRouter extends BaseRouter {
     }
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {GET} /publisher/app:/appId
+   * @apiName Get an app by its id
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
   async getAppById(req, res, next) {
     try {
       res.status(BaseRouter.code.okay).send({ app: req.app.toObject() });
@@ -75,6 +145,26 @@ export default class PublisherRouter extends BaseRouter {
     }
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {GET} /publisher/app
+   * @apiName Get all apps
+   * @apiHeader {String} authorization JWT_Token
+   *
+   *
+   * @apiSuccess {Object[]} apps
+   * @apiSuccess {String} apps._id the campaigns id
+   * @apiSuccess {String} apps.name
+   * @apiSuccess {String} apps.owner id of customer who owns this app
+   * @apiSuccess {Number} apps.maxLength length in seconds of app
+   * @apiSuccess {Object[]} apps.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} apps.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} apps.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} apps.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} apps.tags tags to describe this app
+   * @apiSuccess {String[]} apps.blocked blocked tags by this app
+   */
   async getApps(req, res, next) {
     try {
       const { user } = req;
@@ -87,6 +177,29 @@ export default class PublisherRouter extends BaseRouter {
     }
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {POST} /publisher/app/:appId/displayblock
+   * @apiName Create an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   *
+   * @apiParam (Request Body) {String} name the displayBlock's name
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
   async createDisplayBlock(req, res, next) {
     try {
       const { name } = req.body;
@@ -103,6 +216,30 @@ export default class PublisherRouter extends BaseRouter {
     }
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {PATCH} /publisher/app/:appId/displayblock/:displayBlockId
+   * @apiName Create an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   * @apiParam {String} displayBlockId the app's id
+   *
+   * @apiParam (Request Body) {String} name the displayBlock's name
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
   async updateDisplayBlock(req, res, next) {
     try {
       const app = req.app;

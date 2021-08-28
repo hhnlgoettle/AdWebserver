@@ -1,3 +1,11 @@
+/**
+ * @module
+ * @function accessControl
+ * @description sets header 'Access-Control-Allow-Methods'
+ * @param {Request} req
+ * @param {Response} res
+ * @param {Function} next
+ */
 export default function accessControl(req, res, next) {
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers',

@@ -1,5 +1,7 @@
 /**
- * populates req.user with an guest user object
+ * @module
+ * @function addGuestUser
+ * @desc populates req.user with an guest user object
  * @param req
  * @param res
  * @param next

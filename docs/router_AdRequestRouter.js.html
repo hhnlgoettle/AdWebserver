@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: router/AdRequestRouter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: router/AdRequestRouter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import BaseRouter from '../core/BaseRouter';
+import logger from '../core/logger';
+import resolveApp from '../logic/adRequest/resolveApp.middleware';
+import resolveDisplayBlock from '../logic/adRequest/resolveDisplayBlock.middleware';
+import AdMatchFinder from '../logic/adRequest/AdMatchFinder';
+import getCreativeDownloadUrls from '../logic/adRequest/getCreativeDownloadUrls';
+import createEmptyImpression from '../util/createEmptyImpression';
+import addGuestUser from '../logic/adRequest/addGuestUser.middleware';
+import isAdCachedByUser from '../util/isAdCachedByUser';
+
+const myLogger = logger.child({ moduleName: 'AdRequestRouter' });
+
+export default class AdRequestRouter extends BaseRouter {
+  constructor() {
+    super('/adrequest', myLogger);
+    this.getRouter().post('/:appId/:displayBlockId', addGuestUser, resolveApp, resolveDisplayBlock, this.getAd);
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup AdRequest
+   * @api {POST} /adrequest/:appId/:displayBlockId
+   * @apiName Request an Ad
+   * @apiParam {String} appId the AppId for which ad is requested
+   * @apiParam {String} displayBlockId the DisplayBlockId for which ad is requested
+   * @apiParam (Request Body) {Object[]} cachedCreatives cached Creatives by the
+   * entity requesting the ad
+   * @apiParam (Request Body) {String} cachedCreatives.id id of cached creative
+   * @apiParam (Request Body) {String} cachedCreatives.timestamp  timestamp of cached creative
+   *
+   * @apiSuccess {String} appId id of the app
+   * @apiSuccess {String} displayBlockId id of the display block
+   * @apiSuccess {String} campaignId id of campaign
+   * @apiSuccess {String} impressionId id of impression. used later to post data
+   * @apiSuccess {Boolean} cached indicates if creative is cached by user
+   * @apiSuccess {String} creativeTimestamp timestamp of the creative
+   * @apiSuccess {Object[]} downloadUrls all files to be downloaded
+   * @apiSuccess {String} downloadUrls.url one file's url
+   * @apiSuccess {String} downloadUrls.filename one file's filename
+   */
+  async getAd(req, res, next) {
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const { cachedCreatives } = req.body || [];
+      const appId = req.app._id;
+      const displayBlockId = req.displayBlock._id;
+      const ad = await new AdMatchFinder().findAdForDisplayBlock({ app: req.app });
+      if (ad == null || ad.campaign == null) {
+        this.logger.info(`no ad found for request (appId:${req.app.id}, displayBlockId: ${req.displayBlock.id})`);
+        res.status(BaseRouter.code.noContent).send();
+        return;
+      }
+      const campaignId = ad.campaign._id;
+      const downloadUrls = await getCreativeDownloadUrls(ad.campaign.url);
+      const impression = await createEmptyImpression(
+        { appId, displayBlockId, campaignId },
+      );
+      const cached = isAdCachedByUser(cachedCreatives, ad.campaign);
+      res.status(BaseRouter.code.okay).json(
+        {
+          appId,
+          displayBlockId,
+          campaignId,
+          impressionId: impression._id,
+          cached,
+          creativeTimestamp: ad.campaign.creativeTimestamp,
+          downloadUrls },
+      );
+    } catch (err) {
+      next(err);
+    }
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="config_dotenv.module_config.html">config</a></li><li><a href="module-fsPromise.html">fsPromise</a></li></ul><h3>Classes</h3><ul><li><a href="AdMatchFinder.html">AdMatchFinder</a></li><li><a href="Application.html">Application</a></li><li><a href="BaseRouter.html">BaseRouter</a></li><li><a href="CreativePath.html">CreativePath</a></li><li><a href="HttpError.html">HttpError</a></li><li><a href="HttpErrorHandler.html">HttpErrorHandler</a></li><li><a href="module.exports_module.exports.html">exports</a></li><li><a href="MultiFileUploadController.html">MultiFileUploadController</a></li><li><a href="Tag.html">Tag</a></li><li><a href="Tags.html">Tags</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accessControl">accessControl</a></li><li><a href="global.html#addGuestUser">addGuestUser</a></li><li><a href="global.html#adminAuth">adminAuth</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#connectToDB">connectToDB</a></li><li><a href="global.html#corsOptionsDelegate">corsOptionsDelegate</a></li><li><a href="global.html#createApp">createApp</a></li><li><a href="global.html#createCampaign">createCampaign</a></li><li><a href="global.html#createDirIfNotExists">createDirIfNotExists</a></li><li><a href="global.html#createDisplayBlock">createDisplayBlock</a></li><li><a href="global.html#createEmptyImpression">createEmptyImpression</a></li><li><a href="global.html#customerAuth">customerAuth</a></li><li><a href="global.html#decodeBasicAuth">decodeBasicAuth</a></li><li><a href="global.html#deleteCreative">deleteCreative</a></li><li><a href="global.html#deleteDirContent">deleteDirContent</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAd">getAd</a></li><li><a href="global.html#getAppById">getAppById</a></li><li><a href="global.html#getApps">getApps</a></li><li><a href="global.html#getCampaignById">getCampaignById</a></li><li><a href="global.html#getCampaigns">getCampaigns</a></li><li><a href="global.html#getCreativeDownloadUrls">getCreativeDownloadUrls</a></li><li><a href="global.html#getDatabaseName">getDatabaseName</a></li><li><a href="global.html#getStatsForApp">getStatsForApp</a></li><li><a href="global.html#getStatsForCampaign">getStatsForCampaign</a></li><li><a href="global.html#getStatsForDisplayBlock">getStatsForDisplayBlock</a></li><li><a href="global.html#getTags">getTags</a></li><li><a href="global.html#isAdCachedByUser">isAdCachedByUser</a></li><li><a href="global.html#login">login</a></li><li><a href="global.html#onSaveErrorHandler">onSaveErrorHandler</a></li><li><a href="global.html#passportAuthStrategy">passportAuthStrategy</a></li><li><a href="global.html#postImpression">postImpression</a></li><li><a href="global.html#register">register</a></li><li><a href="global.html#resolveApp">resolveApp</a></li><li><a href="global.html#resolveCampaign">resolveCampaign</a></li><li><a href="global.html#resolveDisplayBlock">resolveDisplayBlock</a></li><li><a href="global.html#resolveImpression">resolveImpression</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#updateApp">updateApp</a></li><li><a href="global.html#updateCampaign">updateCampaign</a></li><li><a href="global.html#updateDisplayBlock">updateDisplayBlock</a></li><li><a href="global.html#uploadCreative">uploadCreative</a></li><li><a href="global.html#verifyHash">verifyHash</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Aug 28 2021 16:35:27 GMT+0200 (Mitteleuropäische Sommerzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

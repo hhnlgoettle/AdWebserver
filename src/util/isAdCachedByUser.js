@@ -1,10 +1,13 @@
 import Logger from '../core/logger';
 
 const myLogger = Logger.child({ childModule: 'isAdCachedByUser' });
+
 /**
- * checks if a campaign / its creative is cached by the requesting entity
- * @param {[{id: String, timestamp: String}]}cached
- * @param {Campaign}campaign
+ * @function isAdCachedByUser
+ * @desc checks if a campaign / its creative is cached by the requesting entity
+ * @param {Array<{id: String, timestamp: String}>}cached cached ads by the user
+ * @param {Campaign} campaign selected campaign for an ad request
+ * @return {boolean} true: ad is cached
  */
 export default function isAdCachedByUser(cached = [], campaign) {
   try {
