@@ -201,6 +201,10 @@ export default class AdvertiserRouter extends BaseRouter {
   async uploadCreative(req, res, next) {
     try {
       const campaign = req.campaign;
+      campaign.creativeTimestamp = null;
+      campaign.url = null;
+      await deleteDirContent(CreativePath.fsPath(campaign));
+      await campaign.save();
       const controller = new MultiFileUploadController();
       await controller.upload(req)
         .catch((err) => {

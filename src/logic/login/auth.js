@@ -19,7 +19,7 @@ const auth = (authModule) => async (req, res, next) => {
         req.user = usr;
         next();
       }).catch((err) => {
-        throw err;
+        next(err);
       });
     })(req, res, next);
   } catch (err) {
