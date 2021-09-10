@@ -203,7 +203,7 @@ export default class AdvertiserRouter extends BaseRouter {
       const campaign = req.campaign;
       campaign.creativeTimestamp = null;
       campaign.url = null;
-      await deleteDirContent(CreativePath.fsPath(campaign));
+      await deleteDirContent(CreativePath.fsPath(campaign)).catch(() => {});
       await campaign.save();
       const controller = new MultiFileUploadController();
       await controller.upload(req)
