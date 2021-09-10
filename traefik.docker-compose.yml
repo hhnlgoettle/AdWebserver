@@ -11,9 +11,16 @@ services:
       - ./keys:/usr/src/app/keys
       - logs:/usr/src/app/logs
       - publicData:/usr/src/app/public
+    ports:
+      - ${TRFK_PORT}:${REST_PORT}
     env_file:
       - .env
+    depends_on:
+      - ira-mongo
+    links:
+      - ira-mongo
     networks:
+      - mongodb_network
       - proxy
 
     labels:
@@ -38,11 +45,33 @@ services:
 
       - "traefik.docker.network=${TRFK_NETWORK}"
 
+  ira-mongo:
+    container_name: ira-mongodb
+    image: mongo
+    restart: always
+    volumes:
+      - ./repo/adwebserver/database/:/docker-entrypoint-initdb.d/:ro
+      - mongoData:/data/db
+    ports:
+      - ${MONGO_PORT}:27017
+    networks:
+      - mongodb_network
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+
 networks:
+  mongodb_network:
+    name: mongodb_network
   proxy:
     external: true
 
 volumes:
+  mongoData:
+    name: AdWebserverMongoDB
   logs:
     name: AdWebserverLogs
   publicData:
