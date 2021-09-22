@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: router/PublisherRouter.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: router/PublisherRouter.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import BaseRouter from '../core/BaseRouter';
+import logger from '../core/logger';
+import customerAuth from '../logic/login/customerAuth';
+import auth from '../logic/login/auth';
+import App from '../models/App';
+import DisplayBlock from '../models/DisplayBlock';
+import resolveApp from '../logic/adRequest/resolveApp.middleware';
+import onSaveErrorHandler from '../util/onSaveErrorHandler';
+import resolveDisplayBlock from '../logic/adRequest/resolveDisplayBlock.middleware';
+
+const myLogger = logger.child({ moduleName: 'PublisherRouter' });
+
+export default class PublisherRouter extends BaseRouter {
+  constructor() {
+    super('/publisher', myLogger);
+    this.getRouter().post('/app', auth(customerAuth), this.createApp);
+    this.getRouter().patch('/app/:appId', auth(customerAuth), resolveApp, this.updateApp);
+    this.getRouter().get('/app/:appId', auth(customerAuth), resolveApp, this.getAppById);
+    this.getRouter().get('/app', auth(customerAuth), this.getApps);
+    this.getRouter().post('/app/:appId/displayblock', auth(customerAuth), resolveApp, this.createDisplayBlock);
+    this.getRouter().patch('/app/:appId/displayblock/:displayBlockId', auth(customerAuth), resolveApp, resolveDisplayBlock, this.updateDisplayBlock);
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {POST} /publisher/app
+   * @apiName Create an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam (Request Body) {String} name the app's name
+   * @apiParam (Request Body) {String[]} tags tags for the app
+   * @apiParam (Request Body) {String[]} blocked which tags this app blocks
+   * @apiParam (Request Body) {Number} maxLength maximum Length of Creatives
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
+  async createApp(req, res, next) {
+    try {
+      const { user } = req;
+      const { name } = req.body;
+      const { tags = [], blocked = [], maxLength = -1 } = req.body;
+
+      const app = new App();
+      app.name = name;
+      app.owner = user.id;
+      app.tags = tags;
+      app.blocked = blocked;
+      app.maxLength = maxLength;
+      await app.save()
+        .then((mApp) => {
+          res.status(BaseRouter.code.created).send({ app: mApp.toObject() });
+        })
+        .catch((err) => { onSaveErrorHandler(err); });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {PATCH} /publisher/app:/appId
+   * @apiName Update an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   * @apiParam (Request Body) {String} name the app's name
+   * @apiParam (Request Body) {String[]} tags tags for the app
+   * @apiParam (Request Body) {String[]} blocked which tags this app blocks
+   * @apiParam (Request Body) {Number} maxLength maximum Length of Creatives
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
+  async updateApp(req, res, next) {
+    try {
+      const app = req.app;
+      const {
+        name = req.app.name,
+        tags = req.app.tags,
+        blocked = req.app.blocked,
+        maxLength = req.app.maxLength,
+      } = req.body;
+
+      app.name = name;
+      app.tags = tags;
+      app.blocked = blocked;
+      app.maxLength = maxLength;
+      await app.save()
+        .then((mApp) => {
+          res.status(BaseRouter.code.created).send({ app: mApp.toObject() });
+        })
+        .catch((err) => { onSaveErrorHandler(err); });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {GET} /publisher/app:/appId
+   * @apiName Get an app by its id
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
+  async getAppById(req, res, next) {
+    try {
+      res.status(BaseRouter.code.okay).send({ app: req.app.toObject() });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {GET} /publisher/app
+   * @apiName Get all apps
+   * @apiHeader {String} authorization JWT_Token
+   *
+   *
+   * @apiSuccess {Object[]} apps
+   * @apiSuccess {String} apps._id the campaigns id
+   * @apiSuccess {String} apps.name
+   * @apiSuccess {String} apps.owner id of customer who owns this app
+   * @apiSuccess {Number} apps.maxLength length in seconds of app
+   * @apiSuccess {Object[]} apps.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} apps.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} apps.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} apps.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} apps.tags tags to describe this app
+   * @apiSuccess {String[]} apps.blocked blocked tags by this app
+   */
+  async getApps(req, res, next) {
+    try {
+      const { user } = req;
+
+      const apps = await App.find({ owner: user.id });
+      apps.map((a) => a.toObject());
+      res.status(BaseRouter.code.okay).send({ apps });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {POST} /publisher/app/:appId/displayblock
+   * @apiName Create an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   *
+   * @apiParam (Request Body) {String} name the displayBlock's name
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
+  async createDisplayBlock(req, res, next) {
+    try {
+      const { name } = req.body;
+
+      const app = req.app;
+
+      const block = new DisplayBlock();
+      block.name = name;
+      app.displayBlocks.push(block);
+      await app.save().catch((err) => { onSaveErrorHandler(err); });
+      res.status(BaseRouter.code.created).send({ app });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Publisher
+   * @api {PATCH} /publisher/app/:appId/displayblock/:displayBlockId
+   * @apiName Create an app
+   * @apiHeader {String} authorization JWT_Token
+   *
+   * @apiParam {String} appId the app's id
+   * @apiParam {String} displayBlockId the app's id
+   *
+   * @apiParam (Request Body) {String} name the displayBlock's name
+   *
+   * @apiSuccess {Object} app
+   * @apiSuccess {String} app._id the campaigns id
+   * @apiSuccess {String} app.name
+   * @apiSuccess {String} app.owner id of customer who owns this app
+   * @apiSuccess {Number} app.maxLength length in seconds of app
+   * @apiSuccess {Object[]} app.displayBlocks displayBlocks of this app
+   * @apiSuccess {String} app.displayBlocks.type=interactionRewardingAd type of this displayBlock
+   * @apiSuccess {String} app.displayBlocks._id id of this displayBlock
+   * @apiSuccess {String} app.displayBlocks.name name of this display block
+   * @apiSuccess {String[]} app.tags tags to describe this app
+   * @apiSuccess {String[]} app.blocked blocked tags by this app
+   */
+  async updateDisplayBlock(req, res, next) {
+    try {
+      const app = req.app;
+      const displayBlock = req.displayBlock;
+      const {
+        name = displayBlock.name,
+      } = req.body;
+      displayBlock.name = name;
+      const index = app.displayBlocks.findIndex(((b) => b._id === displayBlock._id));
+      app.displayBlocks[index] = displayBlock;
+      await app.save().catch((err) => { onSaveErrorHandler(err); });
+      res.status(BaseRouter.code.created).send({ app });
+    } catch (err) {
+      next(err);
+    }
+  }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="config_dotenv.module_config.html">config</a></li><li><a href="module-fsPromise.html">fsPromise</a></li></ul><h3>Classes</h3><ul><li><a href="AdMatchFinder.html">AdMatchFinder</a></li><li><a href="Application.html">Application</a></li><li><a href="BaseRouter.html">BaseRouter</a></li><li><a href="CreativePath.html">CreativePath</a></li><li><a href="HttpError.html">HttpError</a></li><li><a href="HttpErrorHandler.html">HttpErrorHandler</a></li><li><a href="module.exports_module.exports.html">exports</a></li><li><a href="MultiFileUploadController.html">MultiFileUploadController</a></li><li><a href="Tag.html">Tag</a></li><li><a href="Tags.html">Tags</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accessControl">accessControl</a></li><li><a href="global.html#addGuestUser">addGuestUser</a></li><li><a href="global.html#adminAuth">adminAuth</a></li><li><a href="global.html#auth">auth</a></li><li><a href="global.html#connectToDB">connectToDB</a></li><li><a href="global.html#corsOptionsDelegate">corsOptionsDelegate</a></li><li><a href="global.html#createApp">createApp</a></li><li><a href="global.html#createCampaign">createCampaign</a></li><li><a href="global.html#createDirIfNotExists">createDirIfNotExists</a></li><li><a href="global.html#createDisplayBlock">createDisplayBlock</a></li><li><a href="global.html#createEmptyImpression">createEmptyImpression</a></li><li><a href="global.html#customerAuth">customerAuth</a></li><li><a href="global.html#decodeBasicAuth">decodeBasicAuth</a></li><li><a href="global.html#deleteCreative">deleteCreative</a></li><li><a href="global.html#deleteDirContent">deleteDirContent</a></li><li><a href="global.html#generateToken">generateToken</a></li><li><a href="global.html#getAd">getAd</a></li><li><a href="global.html#getAppById">getAppById</a></li><li><a href="global.html#getApps">getApps</a></li><li><a href="global.html#getCampaignById">getCampaignById</a></li><li><a href="global.html#getCampaigns">getCampaigns</a></li><li><a href="global.html#getCreativeDownloadUrls">getCreativeDownloadUrls</a></li><li><a href="global.html#getDatabaseName">getDatabaseName</a></li><li><a href="global.html#getStatsForApp">getStatsForApp</a></li><li><a href="global.html#getStatsForCampaign">getStatsForCampaign</a></li><li><a href="global.html#getStatsForDisplayBlock">getStatsForDisplayBlock</a></li><li><a href="global.html#getTags">getTags</a></li><li><a href="global.html#isAdCachedByUser">isAdCachedByUser</a></li><li><a href="global.html#login">login</a></li><li><a href="global.html#onSaveErrorHandler">onSaveErrorHandler</a></li><li><a href="global.html#passportAuthStrategy">passportAuthStrategy</a></li><li><a href="global.html#postImpression">postImpression</a></li><li><a href="global.html#register">register</a></li><li><a href="global.html#resolveApp">resolveApp</a></li><li><a href="global.html#resolveCampaign">resolveCampaign</a></li><li><a href="global.html#resolveDisplayBlock">resolveDisplayBlock</a></li><li><a href="global.html#resolveImpression">resolveImpression</a></li><li><a href="global.html#toObject">toObject</a></li><li><a href="global.html#updateApp">updateApp</a></li><li><a href="global.html#updateCampaign">updateCampaign</a></li><li><a href="global.html#updateDisplayBlock">updateDisplayBlock</a></li><li><a href="global.html#uploadCreative">uploadCreative</a></li><li><a href="global.html#verifyHash">verifyHash</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Aug 28 2021 16:35:27 GMT+0200 (Mitteleuropäische Sommerzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

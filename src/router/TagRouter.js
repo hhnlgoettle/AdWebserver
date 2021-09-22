@@ -10,6 +10,18 @@ export default class TagRouter extends BaseRouter {
     this.getRouter().get('', this.getTags);
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Tags
+   * @api {GET} /tags Get Tag list
+   * @apiName Receive List of known tags
+   * @apiSuccess {Object[]} tags
+   * @apiSuccess {String} tags.name the tag name
+   * @apiSuccess {String} tags.description the tag's description
+   *
+   * @apiDescription returns a list of all tags
+   *
+   */
   async getTags(req, res, next) {
     try {
       res.send({ tags: Tags.getTags() });

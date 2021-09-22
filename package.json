@@ -11,7 +11,10 @@
     "test": "npm run build && mocha --require @babel/register",
     "test:integration": "cross-env NODE_ENV=test mocha --require @babel/register --recursive ./test/integration/",
     "test:unit": "cross-env NODE_ENV=test mocha --require @babel/register --recursive ./test/unit/",
-    "lint": "./node_modules/.bin/eslint src/"
+    "lint": "./node_modules/.bin/eslint src/",
+    "docs:code": "jsdoc -c ./jsdoc.conf.js",
+    "docs:api": "apiDoc -i src/router -o docsApi/",
+    "docs": "npm run docs:code && npm run docs:api"
   },
   "author": "Luca Göttle <lgoettle@stud.hs-heilbronn.de>",
   "license": "ISC",

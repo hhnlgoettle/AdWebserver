@@ -15,6 +15,15 @@ export default class CustomerRouter extends BaseRouter {
     this.getRouter().get('/register', this.register);
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Customer
+   * @api {GET} /customer/login Login as an Customer
+   * @apiName Login as an Customer
+   * @apiHeader {String} authorization BasicAuth (username:password)
+   * @apiSuccess {String} token the JWT token used to authenticate
+   *
+   */
   async login(req, res, next) {
     try {
       const { username, password } = decodeBasicAuth(req.headers);
@@ -32,6 +41,21 @@ export default class CustomerRouter extends BaseRouter {
     }
   }
 
+  /**
+   * @apiVersion 1.0.1
+   * @apiGroup Customer
+   * @api {GET} /customer/register Register as an Customer
+   * @apiHeader {String} authorization BasicAuth (username:password)
+   * @apiSuccess {Object} user
+   * @apiSuccess {String} user.role "customer"
+   * @apiSuccess {Boolean} user.confirmed true
+   * @apiSuccess {String} user._id unique id
+   * @apiSuccess {String} user.username your username
+   * @apiSuccess {Number} user.customerId sequential id
+   * @apiSuccess {String} user.id unique id, same as _id
+   * @apiDescription Creates a customer. Customer is manually confirmed
+   *
+   */
   async register(req, res, next) {
     try {
       const { username, password } = decodeBasicAuth(req.headers);

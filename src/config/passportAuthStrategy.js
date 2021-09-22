@@ -1,3 +1,10 @@
+/**
+ * @module
+ * @function passportAuthStrategy
+ * @description sets the auth strategy for passport npm module
+ * @param {Passport} passport
+ */
+
 import { Strategy, ExtractJwt } from 'passport-jwt';
 
 const { JWT_PUB_KEY } = process.env;

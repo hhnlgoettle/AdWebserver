@@ -25,6 +25,11 @@ const Schema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  // timestamp when creative was added
+  creativeTimestamp: {
+    type: Date,
+    default: null,
+  },
 });
 
 Schema.set('autoIndex', true);
@@ -52,6 +57,11 @@ Schema.pre('save', async function save(next) {
     if (model.isModified('blocked')) {
       await Tags.filterInput(model.blocked)
         .catch((err) => { throw HttpError.BadRequest(err.message); });
+    }
+
+    // if url is modified, we set creativeTimestamp
+    if (model.isModified('url') && model.url !== null && model.url.length > 0) {
+      model.creativeTimestamp = Date.now();
     }
 
     return next();
